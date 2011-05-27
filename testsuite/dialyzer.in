@@ -1,0 +1,6 @@
+#!/bin/sh
+# $Id: dialyzer.in 2927 2010-05-10 15:20:26Z jean.sebastien.pedron $
+
+dialyzer -n -r @top_builddir@/ebin
+
+exit 0
