@@ -1,4 +1,6 @@
-ETEST = etest
+# $Id: Makefile.am 11510 2011-05-31 07:28:27Z jean.sebastien.pedron $
+
+ETEST   = etest
 TPL_PL  = template.pl
 TPL_ERL = template.erl
 
@@ -8,9 +10,12 @@ ERL_TESTS =
 
 TESTS = dialyzer $(ERL_TESTS)
 
-EXTRA_DIST = $(TPL_PL) $(TPL_ERL) $(ERL_FILES) eunit_lib.erl eunit_tty.erl cover_to_html.sh
+EXTRA_DIST = $(TPL_PL) $(TPL_ERL) $(ERL_FILES) eunit_lib.erl 		\
+	     eunit_tty.erl cover_to_html.sh data
 
-CLEANFILES = $(ERL_TESTS) $(TPL_FILES) eunit_lib.beam eunit_tty.beam erl_crash.dump cover_*.html
+CLEANFILES = $(ERL_TESTS) $(TPL_FILES) eunit_lib.beam eunit_tty.beam 	\
+	     erl_crash.dump cover_*.html cover_*.out cover_*.percent	\
+	     index.html
 
 $(ERL_TESTS): $(ETEST) eunit_lib.erl eunit_tty.erl $(TPL_PL) $(TPL_ERL) data/$@/*.pattern
 	@(test ! -e eunit_lib.beam 					\

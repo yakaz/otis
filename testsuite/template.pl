@@ -62,7 +62,7 @@ sub main {
     foreach my $file (@files) {
         my $name = basename($file, ".pattern");
         my $data = $file;
-        $data =~ s/\.pattern$/.yaml/o;
+        $data =~ s/\.pattern$/.data/o;
 
         my %test = ('data' => $data);
 
