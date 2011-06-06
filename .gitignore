@@ -1,0 +1,9 @@
+.swp
+.*.swp
+Makefile.in
+REPOREV
+ac-aux
+aclocal.m4
+autom4te.cache
+config.h.in
+configure
