@@ -1,0 +1,7 @@
+# vim:ft=yaml:
+
+- rule:
+  - subst:
+      $(PATH): "t"
+      value:   "-"
+      flags:   g

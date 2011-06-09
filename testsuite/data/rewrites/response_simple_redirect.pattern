@@ -1,0 +1,21 @@
+%% vim:ft=erlang:
+
+%% TEST
+{setup,
+  fun() ->
+      application:start(syslogger),
+      application:start(yaml),
+      application:start(otis)
+  end,
+  [
+    ?_assertMatch(
+      "HTTP/1.1 302 Moved Temporarily\r\n"
+      "Location: http://www.example.org/\r\n"
+      "\r\n",
+      begin
+          otis:reload_engine("${FILENAME}"),
+          otis_reqrw_engine:request("http://www.example.org/")
+      end
+    )
+  ]
+}

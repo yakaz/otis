@@ -1,0 +1,9 @@
+# vim:ft=yaml:
+
+- rule:
+  - set:
+      $(METHOD):      POST
+      $(SCHEME):      https
+      $(PATH):        "/match"
+      $(QUERY):       "user=john"
+      $(FRAGMENT):    "top"

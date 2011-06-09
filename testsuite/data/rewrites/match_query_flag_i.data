@@ -1,0 +1,8 @@
+# vim:ft=yaml:
+
+- rule:
+  - match:
+      $(query:user): "a"
+      flags: i
+  - set:
+      $(PATH): "/match"

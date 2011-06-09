@@ -1,0 +1,5 @@
+
+# vim:ft=yaml:
+
+- rule:
+  - response: 404

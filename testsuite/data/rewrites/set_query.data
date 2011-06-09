@@ -1,0 +1,7 @@
+# vim:ft=yaml:
+
+- rule:
+  - set:
+      $(query:user): "bob"
+      $(query:add):  "yes"
+      $(query:remove):

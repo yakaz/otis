@@ -1,0 +1,39 @@
+%% vim:ft=erlang:
+
+%% TEST
+{setup,
+  fun() ->
+      application:start(syslogger),
+      application:start(yaml),
+      application:start(otis)
+  end,
+  [
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      begin
+          otis:reload_engine("${FILENAME}"),
+          otis_reqrw_engine:request("http://www.example.org/")
+      end
+    ),
+    ?_assertMatch(
+      "GET /abou-.h-ml HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      begin
+          otis:reload_engine("${FILENAME}"),
+          otis_reqrw_engine:request("http://www.example.org/about.html")
+      end
+    ),
+    ?_assertMatch(
+      "GET /ABOUT.HTML HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      begin
+          otis:reload_engine("${FILENAME}"),
+          otis_reqrw_engine:request("http://www.example.org/ABOUT.HTML")
+      end
+    )
+  ]
+}

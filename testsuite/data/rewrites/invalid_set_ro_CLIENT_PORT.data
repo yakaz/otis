@@ -1,0 +1,5 @@
+# vim:ft=yaml:
+
+- rule:
+  - set:
+      $(CLIENT_PORT): 33000

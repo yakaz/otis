@@ -1,0 +1,5 @@
+# vim:ft=yaml:
+
+- rule:
+  - set:
+      $(USER_VARS): FOO=bar

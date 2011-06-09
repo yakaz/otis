@@ -1,0 +1,5 @@
+# vim:ft=yaml:
+
+- rule:
+  - set:
+      $(RESULT): GET / HTTP/1.1

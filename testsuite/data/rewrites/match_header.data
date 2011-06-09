@@ -1,0 +1,7 @@
+# vim:ft=yaml:
+
+- rule:
+  - match:
+      $(header:x-otis-user): "a"
+  - set:
+      $(PATH): "/match"

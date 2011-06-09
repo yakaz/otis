@@ -1,0 +1,18 @@
+%% vim:ft=erlang:
+
+%% TEST
+[
+  ?_assertMatch(80,    otis_type_port:from_string("80")),
+  ?_assertMatch(65535, otis_type_port:from_string("65535")),
+  ?_assertThrow(conversion_failed, otis_type_port:from_string("invalid")),
+  ?_assertThrow(conversion_failed, otis_type_port:from_string("-10")),
+  ?_assertThrow(conversion_failed, otis_type_port:from_string("65536")),
+
+  ?_assertMatch("80", otis_type_port:to_string(80)),
+
+  ?_assertMatch(true,  otis_type_port:is_valid(0)),
+  ?_assertMatch(true,  otis_type_port:is_valid(65535)),
+  ?_assertMatch(false, otis_type_port:is_valid(-1)),
+  ?_assertMatch(false, otis_type_port:is_valid(65536)),
+  ?_assertMatch(false, otis_type_port:is_valid(badarg))
+]

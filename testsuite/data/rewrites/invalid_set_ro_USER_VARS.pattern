@@ -1,0 +1,16 @@
+%% vim:ft=erlang:
+
+%% TEST
+{setup,
+  fun() ->
+      application:start(syslogger),
+      application:start(yaml),
+      application:start(otis)
+  end,
+  [
+    ?_assertThrow(
+      invalid_conf,
+      otis:reload_engine("${FILENAME}")
+    )
+  ]
+}

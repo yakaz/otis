@@ -1,0 +1,23 @@
+%% vim:ft=erlang:
+
+%% TEST
+{setup,
+  fun() ->
+      application:start(syslogger),
+      application:start(yaml),
+      application:start(otis)
+  end,
+  [
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.foobar.com\r\n"
+      "X-Otis-Add: yes\r\n"
+      "\r\n",
+      begin
+          otis:reload_engine("${FILENAME}"),
+          otis_reqrw_engine:request("http://www.example.org/",
+            [{"X-Otis-Remove", "yes"}])
+      end
+    )
+  ]
+}

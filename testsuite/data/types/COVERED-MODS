@@ -1,0 +1,6 @@
+%% vim:ft=erlang:
+
+[
+  "types/otis_type_int.erl",
+  "types/otis_type_port.erl"
+].

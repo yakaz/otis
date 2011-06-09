@@ -1,0 +1,8 @@
+# vim:ft=yaml:
+
+- rule:
+  - match:
+      $(PATH): "([0-9]+)"
+      captures: [ $(PATH) ]
+  - set:
+      $(PATH): "/match/$(PATH)"

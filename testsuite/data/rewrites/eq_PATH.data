@@ -1,0 +1,7 @@
+# vim:ft=yaml:
+
+- rule:
+  - eq:
+      $(PATH): "/index.html"
+  - set:
+      $(PATH): "/match"

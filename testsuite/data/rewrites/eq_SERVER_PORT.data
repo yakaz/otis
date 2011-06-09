@@ -1,0 +1,7 @@
+# vim:ft=yaml:
+
+- rule:
+  - eq:
+      $(SERVER_PORT): 443
+  - set:
+      $(PATH): "/match"

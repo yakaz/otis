@@ -1,0 +1,12 @@
+# vim:ft=yaml:
+
+- rule:
+  - not:
+    - eq:
+        $(PATH): "/index.html"
+    - eq:
+        $(query:user): "alice"
+    - eq:
+        $(header:x-otis): "foobar"
+  - set:
+      $(PATH): "/match"

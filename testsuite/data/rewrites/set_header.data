@@ -1,0 +1,7 @@
+# vim:ft=yaml:
+
+- rule:
+  - set:
+      $(header:host):       "www.foobar.com"
+      $(header:x-otis-add): "yes"
+      $(header:x-otis-remove):

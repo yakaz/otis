@@ -1,0 +1,6 @@
+# vim:ft=yaml:
+
+- rule:
+  - response:
+      code:    404
+      reason: "Victime De Son Succès"

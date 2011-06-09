@@ -1,0 +1,6 @@
+# vim:ft=yaml:
+
+- rule:
+  - log: |
+      == Otis Testsuite ==
+      Don't pay attention to surrounding errors fron Otis

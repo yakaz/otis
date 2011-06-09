@@ -1,0 +1,6 @@
+# vim:ft=yaml:
+
+- multi-line
+  key: warning
+- invalid
+indentation

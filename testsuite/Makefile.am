@@ -4,11 +4,13 @@ ETEST   = etest
 TPL_PL  = template.pl
 TPL_ERL = template.erl
 
-TPL_FILES =
+TPL_FILES = types.erl conf.erl rewrites.erl
 
-ERL_TESTS =
+ERL_TESTS = types conf rewrites
 
 TESTS = dialyzer $(ERL_TESTS)
+
+TESTS_ENVIRONMENT = ERL_LIBS=$(ERL_LIBS) PACKAGE_NAME=$(PACKAGE_NAME)
 
 EXTRA_DIST = $(TPL_PL) $(TPL_ERL) $(ERL_FILES) eunit_lib.erl 		\
 	     eunit_tty.erl cover_to_html.sh data

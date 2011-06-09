@@ -1,0 +1,4 @@
+# vim:ft=yaml:
+
+- global consts:
+  foobar:

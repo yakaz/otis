@@ -1,0 +1,12 @@
+%% vim:ft=erlang:
+
+%% TEST
+[
+  ?_assertMatch(11,  otis_type_int:from_string("11")),
+  ?_assertMatch(-11, otis_type_int:from_string("-11")),
+  ?_assertThrow(conversion_failed, otis_type_int:from_string("a123")),
+  ?_assertThrow(conversion_failed, otis_type_int:from_string("123a")),
+
+  ?_assertMatch("11",  otis_type_int:to_string(11)),
+  ?_assertMatch("-11", otis_type_int:to_string(-11))
+]

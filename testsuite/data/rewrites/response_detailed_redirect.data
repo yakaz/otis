@@ -1,0 +1,6 @@
+# vim:ft=yaml:
+
+- rule:
+  - response:
+      code:    302
+      reason: "Get Out"

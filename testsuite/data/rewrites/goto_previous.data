@@ -1,0 +1,32 @@
+# vim:ft=yaml:
+
+- rule:
+  - eq:
+      $(enabled): 1
+  - set:
+      $(PATH): "/first"
+
+- rule:
+  - eq:
+      $(enabled): 1
+  - set:
+      $(PATH): "/previous"
+
+- rule:
+  - set:
+      $(PATH): "/middle"
+      $(enabled): 1
+  - goto: PREVIOUS
+
+- rule:
+  - set:
+      $(PATH): "/next"
+
+- name: foobar
+  rule:
+  - set:
+      $(PATH): "/foobar"
+
+- rule:
+  - set:
+      $(PATH): "/last"

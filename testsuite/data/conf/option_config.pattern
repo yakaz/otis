@@ -1,0 +1,25 @@
+%% vim:ft=erlang:
+
+%% TEST
+{setup,
+  fun() ->
+      application:start(syslogger),
+      application:start(yaml),
+      application:start(otis)
+  end,
+  [
+    ?_assertMatch(
+      undefined,
+      otis_conf:load()
+    ),
+    ?_assertMatch(
+      {ruleset,
+        [],
+        {hooks,[],[],[],[],undefined,undefined},
+        _,
+        "${FILENAME}",
+        _},
+      begin otis_app:set_param(config, "${FILENAME}"), otis_conf:load() end
+    )
+  ]
+}
