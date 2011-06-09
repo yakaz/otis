@@ -5,7 +5,6 @@
 
 %% Public API.
 -export([
-    filename/1,
     read/1,
     gen/1,
     gen_exprs/3,
@@ -18,10 +17,6 @@
 %% Template handling.
 %% -------------------------------------------------------------------
 
-filename(Name) ->
-    Dir = code:priv_dir(?APPLICATION),
-    filename:join([Dir, "template", Name]).
-
 read(Tpl_Name) ->
     Tpl_Name1 = filename(Tpl_Name),
     case file:read_file(Tpl_Name1) of
@@ -31,6 +26,21 @@ read(Tpl_Name) ->
             ?ERROR("Failed to read template \"~s\": ~s~n",
               [Tpl_Name1, file:format_error(Reason)]),
             throw(invalid_template)
+    end.
+
+filename(Name) ->
+    case otis_app:get_param(templates_dir) of
+        default ->
+            case otis_app:from_builddir() of
+                false ->
+                    Dir = code:priv_dir(?APPLICATION),
+                    filename:join([Dir, "template", Name]);
+                true ->
+                    Src_Dir = os:getenv("srcdir"),
+                    filename:join([Src_Dir, "..", "priv", "template", Name])
+            end;
+        Dir ->
+            filename:join([Dir, Name])
     end.
 
 expand(Tpl, [{Name, Value} | Rest]) ->
@@ -129,8 +139,7 @@ gen(#ruleset{rules = Rules} = Ruleset) ->
     Timestamp = io_lib:format("~4..0b-~2..0b-~2..0b ~2..0b:~2..0b:~2..0b",
       [Y, Mo, D, H, Mi, S]),
     %% Generate module header.
-    Tpl_File = filename("otis_reqrw_engine.erl"),
-    Tpl      = read(Tpl_File),
+    Tpl      = read("otis_reqrw_engine.erl"),
     Tpl_Vars = [
       {"SRC_FILE",   Ruleset#ruleset.file},
       {"TIMESTAMP",  Timestamp},
@@ -173,8 +182,7 @@ gen_rules2(#code{cursor = [{rule, I}], ruleset = Ruleset} = Code,
     {[Cont_Fun, Final_Fun, Abort_Fun], After_Text} = gen_hooks(Code1, Rule,
       [if_continue, if_final, if_abort], Hook_Vars, Return_Fun),
     %% Generate the rule code.
-    Tpl_File = filename("rule.erl"),
-    Tpl      = read(Tpl_File),
+    Tpl      = read("rule.erl"),
     %% Prepare template variables.
     Name_S = io_lib:format("~p", [lists:flatten(Name)]),
     Desc1  = case Desc of
@@ -228,8 +236,7 @@ gen_hooks2(#code{cursor = Cursor} = Code, [Name | Rest], Vars,
         [] -> "nohook_" ++ atom_to_list(Name) ++ ".erl";
         _  -> "hook_" ++ atom_to_list(Name) ++ ".erl"
     end,
-    Tpl_File = filename(Tpl_Name),
-    Tpl      = read(Tpl_File),
+    Tpl      = read(Tpl_Name),
     Src_File = (Code#code.ruleset)#ruleset.file,
     {Src_GLine, Src_GCol} = case GHooks#hooks.line of
         undefined -> {"-", "-"};

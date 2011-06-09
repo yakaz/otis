@@ -34,11 +34,15 @@ create(Ruleset, Keyword, Node) ->
 %% -------------------------------------------------------------------
 
 gen_code(#code{cursor = Cursor, ruleset = Ruleset} = Code,
-  #op_log{format_str = Format, line = Line, col = Col}, Next_Fun) ->
+  #op_log{format_str = Format, line = Line, col = Col} = Expr, Next_Fun) ->
     %% Generate the expression code.
-    Tpl_Name = "log.erl",
-    Tpl_File = otis_tpl:filename(Tpl_Name),
-    Tpl      = otis_tpl:read(Tpl_File),
+    Tpl = try
+        otis_tpl:read("log.erl")
+    catch
+        throw:invalid_template ->
+            ?ERROR("Unsupported expression: ~p~n", [Expr]),
+            throw(invalid_expression)
+    end,
     %% Prepare template variables.
     Expr_Fun = otis_tpl:fun_name([log | Cursor]),
     Format1  = otis_var:expand_consts(Code, Format),

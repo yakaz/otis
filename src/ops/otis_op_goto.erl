@@ -16,6 +16,12 @@
 %% String parsing.
 %% -------------------------------------------------------------------
 
+create(_, Keyword, #yaml_int{value = Target}) ->
+    [#op_goto{
+        target = Target,
+        line   = yaml_repr:node_line(Keyword),
+        col    = yaml_repr:node_column(Keyword)
+      }];
 create(_, Keyword, #yaml_str{text = Target}) ->
     [#op_goto{
         target = Target,
@@ -36,10 +42,8 @@ create(Ruleset, Keyword, Node) ->
 
 gen_code(#code{cursor = Cursor, ruleset = Ruleset} = Code,
   #op_goto{target = Target, line = Line, col = Col} = Expr, _) ->
-    Tpl_Name = "goto.erl",
-    Tpl_File = otis_tpl:filename(Tpl_Name),
-    Tpl      = try
-        otis_tpl:read(Tpl_File)
+    Tpl = try
+        otis_tpl:read("goto.erl")
     catch
         throw:invalid_template ->
             ?ERROR("Unsupported expression: ~p~n", [Expr]),
@@ -73,9 +77,4 @@ target("LAST") ->
 target("STOP") ->
     stop;
 target(Name) ->
-    try
-        list_to_integer(Name)
-    catch
-        _:badarg ->
-            Name
-    end.
+    Name.

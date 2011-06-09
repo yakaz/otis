@@ -14,6 +14,11 @@
     log_param_errors/1
   ]).
 
+%% Developments utils.
+-export([
+    from_builddir/0
+  ]).
+
 %% application(3erl) callbacks.
 -export([
     start/2,
@@ -30,7 +35,8 @@
 params_list() ->
     [
       config,
-      save_engine,
+      templates_dir,
+      engine_save_dir,
       loglevel
     ].
 
@@ -48,9 +54,14 @@ is_param_valid(config, none) ->
     true;
 is_param_valid(config, Value) when is_list(Value) ->
     filelib:is_regular(Value);
-is_param_valid(save_engine, "") ->
+is_param_valid(templates_dir, default) ->
     true;
-is_param_valid(save_engine, Value) ->
+is_param_valid(templates_dir, Value) ->
+    Path = otis_utils:expand_path(Value),
+    filelib:is_dir(Path);
+is_param_valid(engine_save_dir, "") ->
+    true;
+is_param_valid(engine_save_dir, Value) ->
     Path = otis_utils:expand_path(Value),
     filelib:is_dir(Path);
 is_param_valid(loglevel, Value) ->
@@ -109,10 +120,16 @@ log_param_errors([config = Param | Rest]) ->
       "It must be a filename or the atom \"none\".~n",
       [?APPLICATION, Param, get_param(Param)]),
     log_param_errors(Rest);
-log_param_errors([save_engine = Param | Rest]) ->
+log_param_errors([templates_dir = Param | Rest]) ->
     error_logger:warning_msg(
       "~s: invalid value for \"~s\": ~p.~n"
-      "It must be a dirname or the atom \"false\".~n",
+      "It must be a dirname or the atom \"default\".~n",
+      [?APPLICATION, Param, get_param(Param)]),
+    log_param_errors(Rest);
+log_param_errors([engine_save_dir = Param | Rest]) ->
+    error_logger:warning_msg(
+      "~s: invalid value for \"~s\": ~p.~n"
+      "It must be a dirname.~n",
       [?APPLICATION, Param, get_param(Param)]),
     log_param_errors(Rest);
 log_param_errors([loglevel = Param | Rest]) ->
@@ -138,6 +155,15 @@ set_loglevel(Level) ->
         false ->
             false
     end.
+
+%% -------------------------------------------------------------------
+%% Development utils.
+%% -------------------------------------------------------------------
+
+from_builddir() ->
+    Dir = filename:dirname(code:which(?MODULE)),
+    Makefile = filename:join([Dir, "Makefile"]),
+    filelib:is_file(Makefile).
 
 %% -------------------------------------------------------------------
 %% application(3erl) callbacks.

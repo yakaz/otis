@@ -312,11 +312,11 @@ format_headers2([{Name, undefined, Type_Mod, Value_C} | Rest], Result) ->
     Header  = format_header(Name, Value_S),
     format_headers2(Rest, [Header | Result]);
 format_headers2([], Result) ->
-    string:join(lists:reverse(Result), "\n").
+    string:join(lists:reverse(Result), "").
 
 format_header(Name, Value) ->
     Name1 = capitalize_header(Name),
-    io_lib:format("~s: ~s", [Name1, Value]).
+    io_lib:format("~s: ~s\r\n", [Name1, Value]).
 
 capitalize_header(Name) ->
     capitalize_header2(Name, "").

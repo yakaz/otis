@@ -384,29 +384,25 @@ get(
   #state{method = Method, headers = Headers,
     response = Is_Resp, code = Code, reason = Reason,
     rheaders = RHeaders, http_ver = {Maj, Min}} = State,
-  #var{prefix = undefined, name = "REQUEST"}, undefined) ->
+  #var{prefix = undefined, name = "RESULT"}, undefined) ->
     if
         Is_Resp ->
             %% HTTP response.
-            RHeaders1 = case otis_utils:format_headers(RHeaders) of
-                ""  -> "";
-                RH1 -> RH1 ++ "\n"
-            end,
+            RHeaders1 = otis_utils:format_headers(RHeaders),
             Req = io_lib:format(
-              "HTTP/~b.~b ~b ~s~n"
-              "~s",
+              "HTTP/~b.~b ~b ~s\r\n"
+              "~s"
+              "\r\n",
               [Maj, Min, Code, Reason, RHeaders1]),
             {State, Req};
         true ->
             %% HTTP request.
             {State1, Path} = otis_utils:rebuild_path(State),
-            Headers1 = case otis_utils:format_headers(Headers) of
-                "" -> "";
-                H1 -> H1 ++ "\n"
-            end,
+            Headers1 = otis_utils:format_headers(Headers),
             Req = io_lib:format(
-              "~s ~s HTTP/~b.~b~n"
-              "~s",
+              "~s ~s HTTP/~b.~b\r\n"
+              "~s"
+              "\r\n",
               [Method, Path, Maj, Min, Headers1]),
             {State1, Req}
     end;
@@ -664,12 +660,8 @@ set(State, #var{prefix = undefined, name = "URI"}, Value, undefined) ->
             ?ERROR("Invalid $(URI): ~p~n", [Value]),
             State
     end;
-set(State, #var{prefix = undefined, name = Name}, _, _) when
-  Name == "RULE" orelse
-  Name == "STATE" orelse
-  Name == "REQUEST" orelse
-  Name == "USER_VARS" ->
-    ?WARNING("Tried to set the read-only variable \"~s\"~n", [Name]),
+set(State, #var{name = Name} = Var, _, _) when not ?IS_VAR_WRITABLE(Var) ->
+    ?WARNING("Tried to set the read-only variable \"~s\".~n", [Name]),
     State;
 set(State, #var{name = [C | _] = Name} = Var, Value, Type_Mod)
   when not is_integer(C) ->
@@ -806,9 +798,9 @@ set_loop2(Name, New_Item, [Item | Rest], List, Already_Set) ->
     set_loop2(Name, New_Item, Rest, [Item | List], Already_Set);
 set_loop2(_, New_Item, [], List, false) ->
     List1 = [New_Item | List],
-    List1;
+    lists:reverse(List1);
 set_loop2(_, _, [], List, true) ->
-    List.
+    lists:reverse(List).
 
 unset_loop(Name, List) ->
     unset_loop2(Name, List, []).

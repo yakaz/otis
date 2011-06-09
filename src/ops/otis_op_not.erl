@@ -34,10 +34,8 @@ create(Ruleset, Keyword, Node) ->
 
 gen_code(#code{cursor = Cursor, ruleset = Ruleset} = Code,
   #op_not{subexprs = Sub_Exprs, line = Line, col = Col} = Expr, Next_Fun) ->
-    Tpl_Name = "not.erl",
-    Tpl_File = otis_tpl:filename(Tpl_Name),
-    Tpl      = try
-        otis_tpl:read(Tpl_File)
+    Tpl = try
+        otis_tpl:read("not.erl")
     catch
         throw:invalid_template ->
             ?ERROR("Unsupported expression: ~p~n", [Expr]),

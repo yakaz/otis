@@ -21,7 +21,8 @@
         %% Configuration default values.
         %% DO NOT EDIT: The final configuration is made in sys.config.
         {config, none},
-        {save_engine, "$HOME"},
+        {templates_dir, default},
+        {engine_save_dir, "$HOME"},
         {loglevel, info}
       ]}
   ]}.

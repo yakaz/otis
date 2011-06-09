@@ -34,10 +34,8 @@ create(Ruleset, Keyword, Node) ->
 
 gen_code(#code{cursor = Cursor, ruleset = Ruleset} = Code,
   #op_any{subexprs = Sub_Exprs, line = Line, col = Col} = Expr, Next_Fun) ->
-    Tpl1_Name = "any_last.erl",
-    Tpl1_File = otis_tpl:filename(Tpl1_Name),
-    Tpl1      = try
-        otis_tpl:read(Tpl1_File)
+    Tpl1 = try
+        otis_tpl:read("any_last.erl")
     catch
         throw:invalid_template ->
             ?ERROR("Unsupported expression: ~p~n", [Expr]),
@@ -63,10 +61,8 @@ gen_code(#code{cursor = Cursor, ruleset = Ruleset} = Code,
     ],
     Text = otis_tpl:expand(Tpl1, Tpl1_Vars),
     %% Load template for other subexpressions.
-    Tpl2_Name = "any.erl",
-    Tpl2_File = otis_tpl:filename(Tpl2_Name),
-    Tpl2      = try
-        otis_tpl:read(Tpl2_File)
+    Tpl2 = try
+        otis_tpl:read("any.erl")
     catch
         throw:invalid_template ->
             ?ERROR("Unsupported expression: ~p~n", [Expr]),

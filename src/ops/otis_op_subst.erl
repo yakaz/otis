@@ -141,10 +141,8 @@ create2(Ruleset, Keyword, [], _) ->
 gen_code(#code{cursor = Cursor, ruleset = Ruleset} = Code,
   #op_subst{line = Line, col = Col} = Expr, Next_Fun) ->
     %% Generate the expression code.
-    Tpl_Name = get_tpl_name(Expr),
-    Tpl_File = otis_tpl:filename(Tpl_Name),
-    Tpl      = try
-        otis_tpl:read(Tpl_File)
+    Tpl = try
+        otis_tpl:read(get_tpl_name(Expr))
     catch
         throw:invalid_template ->
             ?ERROR("Unsupported expression: ~p~n", [Expr]),

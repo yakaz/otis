@@ -43,6 +43,17 @@
     attr   = undefined
   }).
 
+-define(IS_VAR_WRITABLE(V), (
+    V#var.prefix /= undefined orelse (
+      V#var.name /= "CLIENT_PORT" andalso
+      V#var.name /= "SERVER_PORT" andalso
+      V#var.name /= "RULE" andalso
+      V#var.name /= "STATE" andalso
+      V#var.name /= "RESULT" andalso
+      V#var.name /= "USER_VARS"
+    )
+  )).
+
 %% -------------------------------------------------------------------
 %% Operators.
 %% -------------------------------------------------------------------
@@ -167,11 +178,11 @@
 %% Logging.
 %% -------------------------------------------------------------------
 
--define(ERROR(Format, Args),   io:format(standard_error, Format, Args)).
--define(WARNING(Format, Args), io:format(standard_error, Format, Args)).
--define(INFO(Format, Args),    io:format(standard_error, Format, Args)).
--define(DEBUG(Format, Args),   io:format(standard_error, Format, Args)).
-%-define(ERROR(Format, Args),   otis_log:error_msg(Format, Args)).
-%-define(WARNING(Format, Args), otis_log:warning_msg(Format, Args)).
-%-define(INFO(Format, Args),    otis_log:info_msg(Format, Args)).
-%-define(DEBUG(Format, Args),   otis_log:debug_msg(Format, Args)).
+%-define(ERROR(Format, Args),   io:format(standard_error, Format, Args)).
+%-define(WARNING(Format, Args), io:format(standard_error, Format, Args)).
+%-define(INFO(Format, Args),    io:format(standard_error, Format, Args)).
+%-define(DEBUG(Format, Args),   io:format(standard_error, Format, Args)).
+-define(ERROR(Format, Args),   otis_log:error_msg(Format, Args)).
+-define(WARNING(Format, Args), otis_log:warning_msg(Format, Args)).
+-define(INFO(Format, Args),    otis_log:info_msg(Format, Args)).
+-define(DEBUG(Format, Args),   otis_log:debug_msg(Format, Args)).

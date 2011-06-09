@@ -48,32 +48,14 @@ create2(Ruleset, Keyword, [Node | _], _) ->
       [Line, Col]).
 
 create3(Ruleset, Keyword, [{Var, #yaml_null{}} | Rest], Result) ->
-    Op = #op_set{
-      var   = Var,
-      value = "",
-      type  = string,
-      line  = yaml_repr:node_line(Keyword),
-      col   = yaml_repr:node_column(Keyword)
-    },
+    Op = create4(Ruleset, Keyword, Var, "", string),
     create3(Ruleset, Keyword, Rest, [Op | Result]);
 create3(Ruleset, Keyword, [{Var, #yaml_str{text = Value}} | Rest], Result) ->
     Value1 = otis_var:prepare_string(Value),
-    Op = #op_set{
-      var   = Var,
-      value = Value1,
-      type  = string,
-      line  = yaml_repr:node_line(Keyword),
-      col   = yaml_repr:node_column(Keyword)
-    },
+    Op = create4(Ruleset, Keyword, Var, Value1, string),
     create3(Ruleset, Keyword, Rest, [Op | Result]);
 create3(Ruleset, Keyword, [{Var, #yaml_int{value = Value}} | Rest], Result) ->
-    Op = #op_set{
-      var   = Var,
-      value = Value,
-      type  = int,
-      line  = yaml_repr:node_line(Keyword),
-      col   = yaml_repr:node_column(Keyword)
-    },
+    Op = create4(Ruleset, Keyword, Var, Value, int),
     create3(Ruleset, Keyword, Rest, [Op | Result]);
 create3(_, _, [], Result) ->
     lists:reverse(Result);
@@ -84,6 +66,23 @@ create3(Ruleset, Keyword, [{_, Node} | _], _) ->
       "~b:~b: Type of right operand is unsupported.~n",
       [Line, Col]).
 
+create4(_, Keyword, Var, Value, Type) when ?IS_VAR_WRITABLE(Var) ->
+    Type1 = case otis_var:expected_type(Var) of
+        undefined -> Type;
+        T         -> T
+    end,
+    #op_set{
+      var   = Var,
+      value = Value,
+      type  = Type1,
+      line  = yaml_repr:node_line(Keyword),
+      col   = yaml_repr:node_column(Keyword)
+    };
+create4(Ruleset, Keyword, #var{name = Name}, _, _) ->
+    otis_conf:format_error(Ruleset, Keyword,
+      "-:-: Trying to set the read-only variable \"~s\".~n",
+      [Name]).
+
 %% -------------------------------------------------------------------
 %% Code generation
 %% -------------------------------------------------------------------
@@ -91,10 +90,8 @@ create3(Ruleset, Keyword, [{_, Node} | _], _) ->
 gen_code(#code{cursor = Cursor, ruleset = Ruleset} = Code,
   #op_set{line = Line, col = Col} = Expr, Next_Fun) ->
     %% Generate the expression code.
-    Tpl_Name = get_tpl_name(Expr),
-    Tpl_File = otis_tpl:filename(Tpl_Name),
-    Tpl      = try
-        otis_tpl:read(Tpl_File)
+    Tpl = try
+        otis_tpl:read(get_tpl_name(Expr))
     catch
         throw:invalid_template ->
             ?ERROR("Unsupported expression: ~p~n", [Expr]),

@@ -50,21 +50,19 @@ create(Ruleset, Keyword, Node) ->
 
 create2(Ruleset, Keyword, Op,
   [{#yaml_str{text = "code"}, #yaml_int{value = Code}} | Rest])
-  when Code >= 301 andalso Code =< 307 andalso Code /= 304 ->
+  when ?VALID_HTTP_CODE(Code) ->
     Op1 = Op#op_response{
       code = Code
     },
     create2(Ruleset, Keyword, Op1, Rest);
+create2(Ruleset, Keyword, Op,
+  [{#yaml_str{text = "reason"}, #yaml_str{text = Reason}} | Rest]) ->
+    Op1 = Op#op_response{
+      reason = Reason
+    },
+    create2(Ruleset, Keyword, Op1, Rest);
 create2(Ruleset, Keyword, Op, []) ->
     create3(Ruleset, Keyword, Op);
-create2(Ruleset, Keyword, _,
-  [{#yaml_str{text = "code"}, #yaml_int{value = Code} = Node} | _])
-  when ?VALID_HTTP_CODE(Code) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
-    otis_conf:format_error(Ruleset, Keyword,
-      "~b:~b: Only HTTP redirection codes are supported.~n",
-      [Line, Col]);
 create2(Ruleset, Keyword, _,
   [{#yaml_str{text = "code"}, #yaml_int{} = Node} | _]) ->
     Line = yaml_repr:node_line(Node),
@@ -98,10 +96,8 @@ create3(_, Keyword, Op) ->
 gen_code(#code{cursor = Cursor, ruleset = Ruleset} = Code,
   #op_response{code = Status_Code, reason = Reason,
   line = Line, col = Col} = Expr, _) ->
-    Tpl_Name = get_tpl_name(Expr),
-    Tpl_File = otis_tpl:filename(Tpl_Name),
-    Tpl      = try
-        otis_tpl:read(Tpl_File)
+    Tpl = try
+        otis_tpl:read(get_tpl_name(Expr))
     catch
         throw:invalid_template ->
             ?ERROR("Unsupported expression: ~p~n", [Expr]),

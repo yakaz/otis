@@ -16,7 +16,10 @@ nobase_dist_priv_DATA = sys.config					\
 			template/match_query.erl			\
 			template/match_header.erl			\
 			template/set_request_string.erl			\
+			template/set_request_port.erl			\
 			template/set_user_string.erl			\
+			template/set_user_int.erl			\
+			template/set_user_port.erl			\
 			template/set_query.erl				\
 			template/set_header.erl				\
 			template/subst_request.erl			\

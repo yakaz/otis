@@ -1,6 +1,6 @@
 -module(otis_conf).
 
--include_lib("yaml/include/yaml_parser.hrl").
+-include_lib("yaml/include/yaml_errors.hrl").
 -include_lib("yaml/include/yaml_nodes.hrl").
 
 -include("otis.hrl").
@@ -40,13 +40,24 @@ load(File) ->
         },
         interpret_yaml_doc(Ruleset1)
     catch
-        throw:{yaml_parser, Parser} ->
+        throw:#yaml_exception{errors = Errors} ->
             %% The YAML configuration file contains at least one error.
             %% Display what the parser returned.
-            Errors = yaml_parser:get_errors(Parser),
             Fun = fun(
-              #yaml_parser_error{line = Line, column = Col, text = Text}) ->
-                io_lib:format("~b:~b: ~s~n", [Line, Col, Text])
+              #yaml_parsing_error{text = Text} = E) ->
+                Type1 = case E#yaml_parsing_error.type of
+                    error   -> "";
+                    warning -> "Warning: "
+                end,
+                Line1 = case E#yaml_parsing_error.line of
+                    undefined -> "-";
+                    Line      -> integer_to_list(Line)
+                end,
+                Col1 = case E#yaml_parsing_error.column of
+                    undefined -> "-";
+                    Col       -> integer_to_list(Col)
+                end,
+                io_lib:format("~s:~s: ~s~s~n", [Line1, Col1, Type1, Text])
             end,
             Text = string:join(lists:map(Fun, Errors), ""),
             format_error(Ruleset, "~s", [Text])

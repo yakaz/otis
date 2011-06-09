@@ -26,7 +26,7 @@ reload_engine(File) ->
 
 gen_engine(Ruleset) ->
     Code = otis_tpl:gen(Ruleset),
-    Dir  = otis_app:get_param(save_engine),
+    Dir  = otis_app:get_param(engine_save_dir),
     File = case Dir of
         "" -> ?ENGINE_FILE;
         _  -> filename:join([otis_utils:expand_path(Dir), ?ENGINE_FILE])
@@ -48,6 +48,19 @@ compile_engine(File) ->
       return_errors,
       return_warnings
     ],
+    Options1 = case otis_app:from_builddir() of
+        false ->
+            Options;
+        true ->
+            Src_Dir = os:getenv("srcdir"),
+            Inc_Dir = filename:join([Src_Dir, "..", "include"]),
+            [
+              {i, Src_Dir},
+              {i, Inc_Dir},
+              {d, 'IN_SRC'}
+              | Options
+            ]
+    end,
     Log_Error = fun({Line, Mod, Desc}, F) ->
         ?ERROR("~s:~b: ~s~n", [F, Line, Mod:format_error(Desc)]),
         F
@@ -64,7 +77,7 @@ compile_engine(File) ->
         ({".", Ws}) -> lists:foldl(Log_Warning, File, Ws);
         ({F, Ws})   -> lists:foldl(Log_Warning, F, Ws)
     end,
-    case compile:file(File, Options) of
+    case compile:file(File, Options1) of
         {ok, Mod, Bin} ->
             load_engine(File, Mod, Bin);
         {ok, Mod, Bin, []} ->
