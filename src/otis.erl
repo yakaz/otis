@@ -102,11 +102,10 @@ remove_saved_engine() ->
 cover_compile_engine(Keep_Data) ->
     %% Cover-compile the engine. But first, if the caller asked for it,
     %% export any existing data, because the build will flush them.
-    MI = ?ENGINE_MOD:module_info(),
-    Compile = proplists:get_value(compile, MI),
-    Source  = proplists:get_value(source, Compile),
-    Options = proplists:get_value(options, Compile),
-    Export  = filename:rootname(Source) ++ ".coverdata",
+    MI       = ?ENGINE_MOD:module_info(),
+    Compile  = proplists:get_value(compile, MI),
+    Source   = proplists:get_value(source, Compile),
+    Export   = filename:rootname(Source) ++ ".coverdata",
     Exported = case cover:is_compiled(?ENGINE_MOD) of
         {file, _} when Keep_Data ->
             cover:export(Export, ?ENGINE_MOD),
@@ -114,7 +113,7 @@ cover_compile_engine(Keep_Data) ->
         _ ->
             false
     end,
-    case cover:compile_module(?ENGINE_MOD, Options) of
+    case cover:compile_beam(?ENGINE_MOD) of
         {ok, _} ->
             ?INFO("Engine cover-compiled~n", []);
         {error, Reason} ->
@@ -161,6 +160,7 @@ gen_engine(Ruleset) ->
 compile_engine(File) ->
     Options = [
       verbose,
+      debug_info,
       return_errors,
       return_warnings
     ],
