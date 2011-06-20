@@ -175,7 +175,8 @@ from_builddir() ->
 start(_, _) ->
     Steps = [
       check_params,
-      setup_syslog
+      setup_syslog,
+      add_save_dir_to_code_path
     ],
     case do_start(Steps) of
         {error, Reason, Message} ->
@@ -214,6 +215,14 @@ do_start([setup_syslog | Rest]) ->
     syslog:add(otis, "otis", daemon, info, [log_pid]),
     %% Create the syslog wrapper for token_bucket
     set_loglevel(get_param(loglevel)),
+    do_start(Rest);
+do_start([add_save_dir_to_code_path | Rest]) ->
+    %% Add the engine save directory to the code path, because the
+    %% engine source file and beam file are written to this directory.
+    %% We add it to the end of the paths list because this directory is
+    %% writable by the node: we don't want to allow to override other
+    %% modules.
+    code:add_pathz(get_param(engine_save_dir)),
     do_start(Rest);
 do_start([]) ->
     otis_sup:start_link().
