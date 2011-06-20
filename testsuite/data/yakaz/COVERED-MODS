@@ -1,0 +1,22 @@
+%% vim:ft=erlang:
+
+[
+  "otis_app.erl",
+  "otis.erl",
+  "otis_conf.erl",
+  "otis_tpl.erl",
+  "otis_var.erl",
+  "otis_utils.erl",
+  "types/otis_type_int.erl",
+  "types/otis_type_port.erl",
+  "ops/otis_op_all.erl",
+  "ops/otis_op_any.erl",
+  "ops/otis_op_eq.erl",
+  "ops/otis_op_goto.erl",
+  "ops/otis_op_log.erl",
+  "ops/otis_op_match.erl",
+  "ops/otis_op_not.erl",
+  "ops/otis_op_response.erl",
+  "ops/otis_op_set.erl",
+  "ops/otis_op_subst.erl"
+].
