@@ -327,7 +327,7 @@ expand_parts(State, [Part | Rest], Result) ->
     Result1 = Result ++ Part_S,
     expand_parts(State1, Rest, Result1);
 expand_parts(State, [], Result) ->
-    {State, Result}.
+    {State, lists:flatten(Result)}.
 
 %% -------------------------------------------------------------------
 %% Variable accessors.
