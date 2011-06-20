@@ -145,6 +145,7 @@ gen(#ruleset{rules = Rules} = Ruleset) ->
       {"TIMESTAMP",  Timestamp},
       {"FIRST_RULE", First_Rule},
       {"RULES_IDX",  Rules_Idx_Var},
+      {"CONF",       io_lib:format("~p", [Ruleset#ruleset.file])},
       {"RULES",      io_lib:format("~p", [Rules])}
     ],
     Text = expand(Tpl, Tpl_Vars),
