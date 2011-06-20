@@ -5,19 +5,36 @@
   fun() ->
       application:start(syslogger),
       application:start(yaml),
-      application:start(otis)
+      application:start(otis),
+      otis_app:set_param(engine_save_dir, os:getenv("PWD"))
+  end,
+  fun(_) ->
+      error_logger:tty(false),
+      ok = application:stop(otis),
+      ok = application:stop(yaml),
+      ok = application:stop(syslogger)
   end,
   [
+    %% Compile engine.
+    ?_assertMatch(
+      ok,
+      otis:reload_engine_if_modified("${FILENAME}")
+    ),
+
+    %% Tests.
     ?_assertMatch(
       "GET / HTTP/1.1\r\n"
       "Host: www.foobar.com\r\n"
       "X-Otis-Add: yes\r\n"
       "\r\n",
-      begin
-          otis:reload_engine("${FILENAME}"),
-          otis_reqrw_engine:request("http://www.example.org/",
-            [{"X-Otis-Remove", "yes"}])
-      end
+      otis_reqrw_engine:request("http://www.example.org/",
+        [{"X-Otis-Remove", "yes"}])
+    ),
+
+    %% Remove engine.
+    ?_assertMatch(
+      ok,
+      otis:remove_saved_engine()
     )
   ]
 }

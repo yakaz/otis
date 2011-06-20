@@ -5,7 +5,14 @@
   fun() ->
       application:start(syslogger),
       application:start(yaml),
-      application:start(otis)
+      application:start(otis),
+      otis_app:set_param(engine_save_dir, os:getenv("PWD"))
+  end,
+  fun(_) ->
+      error_logger:tty(false),
+      ok = application:stop(otis),
+      ok = application:stop(yaml),
+      ok = application:stop(syslogger)
   end,
   [
     ?_assertMatch(
@@ -19,7 +26,10 @@
         _,
         "${FILENAME}",
         _},
-      begin otis_app:set_param(config, "${FILENAME}"), otis_conf:load() end
+      begin
+          otis_app:set_param(config, "${FILENAME}"),
+          otis_conf:load()
+      end
     )
   ]
 }
