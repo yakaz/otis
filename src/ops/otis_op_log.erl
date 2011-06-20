@@ -11,6 +11,11 @@
     gen_code/3
   ]).
 
+%% Used by templates.
+-export([
+    convert_http_newlines/1
+  ]).
+
 %% -------------------------------------------------------------------
 %% Public API.
 %% -------------------------------------------------------------------
@@ -56,3 +61,17 @@ gen_code(#code{cursor = Cursor, ruleset = Ruleset} = Code,
     ],
     Text = otis_tpl:expand(Tpl, Tpl_Vars),
     {Expr_Fun, [Text]}.
+
+%% -------------------------------------------------------------------
+%% Used by templates
+%% -------------------------------------------------------------------
+
+convert_http_newlines(String) ->
+    convert_http_newlines2(String, []).
+
+convert_http_newlines2([$\r, $\n | Rest], Result) ->
+    convert_http_newlines2(Rest, [$\n | Result]);
+convert_http_newlines2([C | Rest], Result) ->
+    convert_http_newlines2(Rest, [C | Result]);
+convert_http_newlines2([], Result) ->
+    lists:reverse(Result).
