@@ -27,7 +27,7 @@ analyze_mods(Prefix, Mods) ->
         {error, Reason} ->
             io:format(standard_error,
               "Failed to open \"~s\": ~p~n", [Out, Reason]),
-            erlang:exit(1)
+            halt(1)
     end.
 
 wait_for_children(FD, []) ->

@@ -38,7 +38,7 @@ output_test_coverage () {
                 continue
             fi
 
-            cover_data="$cover_data test_${test_name}.coverdata"
+            cover_data="$cover_data ${test_name}.coverdata"
         done
 
         test_name="global"
@@ -46,7 +46,7 @@ output_test_coverage () {
     else
         test_name=$1
         pretty_name=`echo $test_name | tr "_" " "`
-        cover_data="test_${test_name}.coverdata"
+        cover_data="${test_name}.coverdata"
     fi
 
     # Generate covered modules data. We ignore stdout because cover

@@ -73,7 +73,7 @@ sub main {
 
     my @tests = ();
 
-    my $module = 'test_'.basename($tests_dir);
+    my $module = basename($tests_dir);
 
     my $srcdir       = $ENV{'srcdir'};
     my $builddir     = $ENV{'builddir'};
