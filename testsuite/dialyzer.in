@@ -2,8 +2,7 @@
 # $Id: dialyzer.in 11510 2011-05-31 07:28:27Z jean.sebastien.pedron $
 
 if [ "$SKIP_DIALYZER" ]; then
-	echo '  Skip dialyzer test ($SKIP_DIALYZER set)'
-	exit 0
+	exit 77
 fi
 
 dialyzer -n -r @top_builddir@/ebin

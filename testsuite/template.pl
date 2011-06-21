@@ -27,6 +27,27 @@ sub get_desc ($) {
     return $desc;
 }
 
+sub get_data ($) {
+    my ($fd) = @_;
+
+    my $data;
+
+    while (my $line = <$fd>) {
+        chomp $line;
+
+        # An empty line stops data parsing.
+        last if ($line =~ /^\s*$/o);
+
+        if ($data) {
+            $data .= "\\n".$line;
+        } else {
+            $data = $line;
+        }
+    }
+
+    return $data;
+}
+
 sub get_test ($) {
     my ($fd) = @_;
 
@@ -52,7 +73,12 @@ sub main {
 
     my @tests = ();
 
-    my $module = basename($tests_dir);
+    my $module = 'test_'.basename($tests_dir);
+
+    my $srcdir       = $ENV{'srcdir'};
+    my $builddir     = $ENV{'builddir'};
+    my $top_srcdir   = $ENV{'top_srcdir'};
+    my $top_builddir = $ENV{'top_builddir'};
 
     my @files = glob("$tests_dir/*.pattern");
     if ($ENV{'TEST_PATTERN'}) {
@@ -75,6 +101,8 @@ sub main {
 
             if ($line =~ /^\s*\%+\s*DESCRIPTION$/o) {
                 $test{'desc'} = get_desc($fd);
+            } elsif ($line =~ /^\s*\%+\s*DATA$/o) {
+                $test{'data'} = $data = dirname($file).'/'.get_data($fd);
             } elsif ($line =~ /^\s*\%+\s*TEST$/o) {
                 $test{'test'} = get_test($fd);
                 last;
@@ -107,6 +135,11 @@ sub main {
         }
 
         $line =~ s/\${MODULE}/$module/g;
+        $line =~ s/\${srcdir}/$srcdir/g;
+        $line =~ s/\${builddir}/$builddir/g;
+        $line =~ s/\${top_srcdir}/$top_srcdir/g;
+        $line =~ s/\${top_builddir}/$top_builddir/g;
+
         print $line;
     }
 

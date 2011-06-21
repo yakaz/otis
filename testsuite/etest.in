@@ -20,7 +20,10 @@ main([]) ->
 
 main([Test]) ->
     code:add_patha(filename:join(["@top_builddir@", "ebin"])),
-    Ret = run_test(Test, [@EMKOPTS@]),
+    Test1 = filename:join(
+      filename:dirname(Test),
+      "test_" ++ filename:basename(Test)),
+    Ret = run_test(Test1, [@EMKOPTS@]),
     stop(Ret);
 
 %% @doc

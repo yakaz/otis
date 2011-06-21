@@ -1,23 +1,29 @@
 # $Id: Makefile.am 11510 2011-05-31 07:28:27Z jean.sebastien.pedron $
 
-ETEST   = etest
-TPL_PL  = template.pl
-TPL_ERL = template.erl
+ETEST         = etest
+TPL_PL        = template.pl
+TPL_ERL       = template.erl
+COVER_TO_HTML = cover_to_html.sh
 
-TPL_FILES = types.erl conf.erl rewrites.erl
+TPL_FILES = test_types.erl test_conf.erl test_rewrites.erl test_yakaz.erl
 
-ERL_TESTS = types conf rewrites
+ERL_TESTS = types conf rewrites yakaz
 
 TESTS = dialyzer $(ERL_TESTS)
 
-TESTS_ENVIRONMENT = ERL_LIBS=$(ERL_LIBS) PACKAGE_NAME=$(PACKAGE_NAME)
+TESTS_ENVIRONMENT = ERL_LIBS=$(ERL_LIBS)
 
 EXTRA_DIST = $(TPL_PL) $(TPL_ERL) $(ERL_FILES) eunit_lib.erl 		\
-	     eunit_tty.erl cover_to_html.sh data
+	     eunit_tty.erl $(COVER_TO_HTML) mod_coverage.escript data
 
 CLEANFILES = $(ERL_TESTS) $(TPL_FILES) eunit_lib.beam eunit_tty.beam 	\
 	     erl_crash.dump cover_*.html cover_*.out cover_*.percent	\
-	     index.html
+	     index*.html *.coverdata
+
+# check-local is executed after check. We use this to output cover
+# results.
+check-local:
+	@$(srcdir)/$(COVER_TO_HTML) $(TESTS)
 
 $(ERL_TESTS): $(ETEST) eunit_lib.erl eunit_tty.erl $(TPL_PL) $(TPL_ERL) data/$@/*.pattern
 	@(test ! -e eunit_lib.beam 					\
@@ -32,9 +38,9 @@ $(ERL_TESTS): $(ETEST) eunit_lib.erl eunit_tty.erl $(TPL_PL) $(TPL_ERL) data/$@/
 	  cp $(ETEST) $@ && chmod 755 $@) || :
 	@if test ! -e $@.erl; then					\
 	   rebuild=yes;							\
-	 elif test $(srcdir)/$(TPL_PL) -nt $@.erl; then			\
+	 elif test $(srcdir)/$(TPL_PL) -nt test_$@.erl; then		\
 	   rebuild=yes;							\
-	 elif test $(srcdir)/$(TPL_ERL) -nt $@.erl; then		\
+	 elif test $(srcdir)/$(TPL_ERL) -nt test_$@.erl; then		\
 	   rebuild=yes;							\
 	 else								\
 	   for file in $(srcdir)/data/$@/*.pattern; do			\
@@ -44,6 +50,11 @@ $(ERL_TESTS): $(ETEST) eunit_lib.erl eunit_tty.erl $(TPL_PL) $(TPL_ERL) data/$@/
 	   done;							\
 	 fi;								\
 	 if test "$$rebuild" = "yes"; then				\
-	   echo "Create: $@.erl";					\
-	   $(srcdir)/$(TPL_PL) $(srcdir)/$(TPL_ERL) $(srcdir)/data/$@ > $@.erl;\
+	   echo "Create: test_$@.erl";					\
+	   env								\
+	    srcdir=$(srcdir)						\
+	    builddir=$(builddir)					\
+	    top_srcdir=$(top_srcdir)					\
+	    top_builddir=$(top_builddir)				\
+	    $(srcdir)/$(TPL_PL) $(srcdir)/$(TPL_ERL) $(srcdir)/data/$@ > test_$@.erl;\
 	 fi
