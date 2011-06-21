@@ -14,7 +14,7 @@ TESTS = dialyzer $(ERL_TESTS)
 TESTS_ENVIRONMENT = ERL_LIBS=$(ERL_LIBS)
 
 EXTRA_DIST = $(TPL_PL) $(TPL_ERL) $(COVER_TO_HTML)			\
-	     eunit_lib.erl eunit_tty.erl mod_coverage.escript data
+	     eunit_lib.erl eunit_tty.erl test_coverage.escript data
 
 CLEANFILES = $(ERL_TESTS) $(TPL_FILES) eunit_lib.beam eunit_tty.beam 	\
 	     erl_crash.dump cover_*.html cover_*.out cover_*.percent	\
