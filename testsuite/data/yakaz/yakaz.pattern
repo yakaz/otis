@@ -89,12 +89,8 @@ yakaz.conf
       "Host: www.yakaz.fr\r\n"
       "\r\n",
       otis_reqrw_engine:request("http://yakaz.fr/")
-    ),
-
-    %% Remove engine.
-    ?_assertMatch(
-      ok,
-      otis:remove_saved_engine()
     )
+
+    %% Remove engine not remove: it's needed by cover:analyse_to_file/1.
   ]
 }
