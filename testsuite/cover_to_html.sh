@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-if [ -z "$1" -o -z "$2" ]; then
+if [ -z "$1" ]; then
 	echo "Syntax: $0 <test_name> [<test_name> ...]"
 	exit 1
 fi
@@ -31,17 +31,22 @@ color_95="3dff00"
 color_100="27ff00"
 
 output_test_coverage () {
-    tests_count=0
     cover_data=
-    for test_name in $@; do
-        cover_data="$cover_data test_${test_name}.coverdata"
-        tests_count=$((tests_count + 1))
-    done
-    if [ $tests_count -gt 1 ]; then
+    if [ "$1" = "global" ]; then
+        for test_name in $@; do
+            if [ "$test_name" = "global" ]; then
+                continue
+            fi
+
+            cover_data="$cover_data test_${test_name}.coverdata"
+        done
+
         test_name="global"
         pretty_name="Global coverage"
     else
+        test_name=$1
         pretty_name=`echo $test_name | tr "_" " "`
+        cover_data="test_${test_name}.coverdata"
     fi
 
     # Generate covered modules data. We ignore stdout because cover
@@ -290,7 +295,7 @@ for test_name in $@; do
 done
 
 # Global test coverage output.
-output_test_coverage $test_names
+output_test_coverage global $test_names
 
 # Per-test test coverage output.
 for test_name in $test_names; do
