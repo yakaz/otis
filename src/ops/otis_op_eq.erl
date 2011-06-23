@@ -25,8 +25,8 @@
 
 create(Ruleset, Keyword,
   #yaml_map{pairs = [{#yaml_str{text = Var} = Node, Value}]}) ->
-    case otis_var:prepare_string(Var) of
-        [#var{} = Var1] ->
+    case otis_var:parse(Var) of
+        #var{} = Var1 ->
             create2(Ruleset, Keyword, Var1, Value);
         _ ->
             Line = yaml_repr:node_line(Node),
@@ -51,7 +51,7 @@ create(Ruleset, Keyword, Node) ->
 
 create2(Ruleset, Keyword, Var, #yaml_str{text = Value}) ->
     %% String exact matching.
-    Value1 = otis_var:prepare_string(Value),
+    Value1 = otis_var:parse(Value),
     create3(Ruleset, Keyword, Var, Value1, string);
 create2(Ruleset, Keyword, Var, #yaml_int{value = Value}) ->
     %% Integer exact matching.

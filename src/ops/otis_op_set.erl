@@ -27,8 +27,8 @@ create(Ruleset, Keyword, Node) ->
 
 create2(Ruleset, Keyword,
   [{#yaml_str{text = Var} = Node, Value} | Rest], Vars) ->
-    case otis_var:prepare_string(Var) of
-        [#var{} = Var1] ->
+    case otis_var:parse(Var) of
+        #var{} = Var1 ->
             Vars1  = lists:keystore(Var1, 1, Vars, {Var1, Value}),
             create2(Ruleset, Keyword, Rest, Vars1);
         _ ->
@@ -51,7 +51,7 @@ create3(Ruleset, Keyword, [{Var, #yaml_null{}} | Rest], Result) ->
     Op = create4(Ruleset, Keyword, Var, "", string),
     create3(Ruleset, Keyword, Rest, [Op | Result]);
 create3(Ruleset, Keyword, [{Var, #yaml_str{text = Value}} | Rest], Result) ->
-    Value1 = otis_var:prepare_string(Value),
+    Value1 = otis_var:parse(Value),
     Op = create4(Ruleset, Keyword, Var, Value1, string),
     create3(Ruleset, Keyword, Rest, [Op | Result]);
 create3(Ruleset, Keyword, [{Var, #yaml_int{value = Value}} | Rest], Result) ->

@@ -53,11 +53,11 @@ create2(Ruleset, Keyword,
 create2(Ruleset, Keyword,
   [{#yaml_str{text = Var} = Node, #yaml_str{text = Value}} | Rest],
   #op_match{var = undefined} = Op) ->
-    case otis_var:prepare_string(Var) of
-        [#var{} = Var1] ->
+    case otis_var:parse(Var) of
+        #var{} = Var1 ->
             Line   = yaml_repr:node_line(Keyword),
             Col    = yaml_repr:node_column(Keyword),
-            Value1 = otis_var:prepare_string(Value),
+            Value1 = otis_var:parse(Value),
             Op1 = Op#op_match{
               var   = Var1,
               regex = Value1,
@@ -142,8 +142,8 @@ create2(Ruleset, Keyword, [], _) ->
 
 create_captures(Ruleset, Keyword, [#yaml_str{text = Var} = Capt | Rest],
   Result) ->
-    case otis_var:prepare_string(Var) of
-        [#var{} = Var1] ->
+    case otis_var:parse(Var) of
+        #var{} = Var1 ->
             create_captures(Ruleset, Keyword, Rest, [Var1 | Result]);
         _ ->
             Line = yaml_repr:node_line(Capt),
@@ -269,7 +269,17 @@ get_tpl_vars2(Code,
 handle_captures(State, [Var | Rest1], [Value | Rest2]) ->
     State1 = otis_var:set(State, Var, Value),
     handle_captures(State1, Rest1, Rest2);
-handle_captures(State, [], _) ->
+handle_captures(State, [Var | Rest1], []) ->
+    State1 = otis_var:set(State, Var, ""),
+    handle_captures(State1, Rest1, []);
+handle_captures(State, [], Captured) ->
+    case Captured of
+        [] ->
+            ok;
+        _ ->
+            ?WARNING("~s: ~b captured values not handled: ~p~n",
+              [length(Captured), Captured])
+    end,
     State.
 
 query_param(#state{query_parsed = false} = State, Name, Regex, Flags,

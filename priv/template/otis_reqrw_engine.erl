@@ -37,7 +37,7 @@ uri(URI) ->
 
 uri(URI, Headers) ->
     State = request2(URI, Headers),
-    Var = otis_var:prepare_string("$(URI)"),
+    Var = otis_var:parse("$(URI)"),
     {_, Result} = otis_var:expand(State, Var),
     lists:flatten(Result).
 
@@ -46,7 +46,7 @@ request(URI) ->
 
 request(URI, Headers) ->
     State = request2(URI, Headers),
-    Var = otis_var:prepare_string("$(RESULT)"),
+    Var = otis_var:parse("$(RESULT)"),
     {_, Result} = otis_var:expand(State, Var),
     lists:flatten(Result).
 

@@ -33,7 +33,7 @@ create(Ruleset, Keyword, Node) ->
 create2(Ruleset, Keyword,
   [{#yaml_str{text = "value"}, #yaml_str{text = Value}} | Rest],
   #op_subst{value = undefined} = Op) ->
-    Value1 = otis_var:prepare_string(Value),
+    Value1 = otis_var:parse(Value),
     Op1 = Op#op_subst{
       value = Value1
     },
@@ -51,9 +51,9 @@ create2(Ruleset, Keyword,
 create2(Ruleset, Keyword,
   [{#yaml_str{text = Var} = Node, #yaml_str{text = Value}} | Rest],
   #op_subst{var = undefined} = Op) ->
-    case otis_var:prepare_string(Var) of
-        [#var{} = Var1] ->
-            Value1 = otis_var:prepare_string(Value),
+    case otis_var:parse(Var) of
+        #var{} = Var1 ->
+            Value1 = otis_var:parse(Value),
             Op1 = Op#op_subst{
               var   = Var1,
               regex = Value1

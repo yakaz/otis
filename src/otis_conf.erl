@@ -255,11 +255,11 @@ create_consts(Ruleset, _, _, Node) ->
 create_consts2(#ruleset{consts = Global_Consts} = Ruleset, Consts,
   [{#yaml_str{text = Const} = Node, #yaml_str{text = Value}}
   | Rest]) ->
-    Const1 = otis_var:prepare_string(Const),
+    Const1 = otis_var:parse(Const),
     Const2 = otis_var:expand_consts(Consts, Global_Consts, Const1),
     case Const2 of
-        [#var{prefix = undefined, name = Name, attr = undefined}] ->
-            Value1 = otis_var:prepare_string(Value),
+        #var{prefix = undefined, name = Name, attr = undefined} ->
+            Value1 = otis_var:parse(Value),
             Value2 = otis_var:expand_consts(Consts, Global_Consts, Value1),
             Consts1  = dict:store(Name, Value2, Consts),
             create_consts2(Ruleset, Consts1, Rest);

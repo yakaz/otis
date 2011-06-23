@@ -21,7 +21,7 @@
 %% -------------------------------------------------------------------
 
 create(_, Keyword, #yaml_str{text = Format_String}) ->
-    Prepared = otis_var:prepare_string(Format_String),
+    Prepared = otis_var:parse(Format_String),
     [#op_log{
         format_str = Prepared,
         line       = yaml_repr:node_line(Keyword),
