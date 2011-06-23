@@ -38,9 +38,10 @@
 %% -------------------------------------------------------------------
 
 -record(var, {
-    prefix = undefined,
-    name   = "",
-    attr   = undefined
+    prefix  = undefined,
+    name    = "",
+    attr    = undefined,
+    filters = []
   }).
 
 -define(IS_VAR_WRITABLE(V), (

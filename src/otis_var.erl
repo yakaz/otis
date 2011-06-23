@@ -5,7 +5,7 @@
 
 %% Public API.
 -export([
-    prepare_string/1,
+    parse/1,
     domain/1,
     state_member/1,
     expected_type/1,
@@ -32,7 +32,9 @@
     set_header/3,
     set_header/4,
     set_rheader/3,
-    set_rheader/4
+    set_rheader/4,
+    run_filters/3,
+    run_filters/4
   ]).
 
 -record(parser, {
@@ -49,9 +51,9 @@
 %% String parsing.
 %% -------------------------------------------------------------------
 
-prepare_string(Not_String) when not is_list(Not_String) ->
+parse(Not_String) when not is_list(Not_String) ->
     Not_String;
-prepare_string(String) ->
+parse(String) ->
     find_variables(String, #parser{}).
 
 %% Parse variable.
@@ -103,8 +105,9 @@ find_variables([], #parser{result = [#var_st{} | _]}) ->
 find_variables([], #parser{result = Result, current = undefined}) ->
     Result1 = lists:reverse(Result),
     case Result1 of
-        [R] when is_list(R) -> R;
-        _                   -> Result1
+        [T] when is_list(T)        -> T;
+        [V] when is_record(V, var) -> V;
+        _                          -> Result1
     end;
 find_variables([], Parser) ->
     %% Collapse one level.
@@ -114,60 +117,50 @@ find_variables([], Parser) ->
 %% Reverse text or create final variable.
 collapse(#parser{current = undefined} = Parser) ->
     Parser;
+collapse(#parser{current = #var_st{name = []}}) ->
+    ?ERROR("Invalid empty variable name~n", []),
+    throw(invalid_variable_name);
 collapse(#parser{current = #var_st{name = Name}} = Parser) ->
-    %% Extract attribute.
-    [Tail | Rest] = Name,
-    {Tail1, Attr} = if
-        is_list(Tail) ->
-            case string:rchr(Tail, $#) of
-                0 ->
-                    {Tail, undefined};
-                I1 ->
-                    {
-                      string:substr(Tail, 1, I1 - 1),
-                      string:substr(Tail, I1 + 1)
-                    }
-            end;
-        true ->
-            {Tail, undefined}
+    %% Extract filters. They're placed at the end of a variable but Name
+    %% is reversed.
+    [Tail1 | Rest1]  = Name,
+    {Tail2, Filters} = extract_filters(Tail1),
+    %% Extract attribute. We use the same method than for filters. But
+    %% first, we must check if Tail2 is empty. If this is the case, we
+    %% need to pick the next element in Rest.
+    [Tail3 | Rest2] = case Tail2 of
+        "" when Rest1 /= [] ->
+            Rest1;
+        "" ->
+            ?ERROR("Invalid empty variable name~n", []),
+            throw(invalid_variable_name);
+        _  ->
+            [Tail2 | Rest1]
     end,
-    if
-        Attr == "" ->
-            ?ERROR("Invalid empty variable attribute~n", []),
-            throw(invalid_variable_attribute);
-        true ->
-            ok
+    {Tail4, Attr} = extract_attr(Tail3),
+    %% Extract prefix. Like above, we must check if Tail4 is empty. The
+    %% prefix is placed at the beginning: we need to reverse the list.
+    [Head1 | Rest3] = case Tail4 of
+        "" when Rest2 /= [] ->
+            lists:reverse(Rest2);
+        "" ->
+            ?ERROR("Invalid empty variable name~n", []),
+            throw(invalid_variable_name);
+        _  ->
+            lists:reverse([Tail4 | Rest2])
     end,
-    %% Extract prefix.
-    [Head | Rest1] = case Tail1 of
-        "" -> lists:reverse(Rest);
-        _  -> lists:reverse([Tail1 | Rest])
+    {Head2, Prefix} = extract_prefix(Head1),
+    %% And again, we check if the returned Head2 is empty.
+    Name1 = case Head2 of
+        "" when Rest3 /= [] ->
+            Rest3;
+        "" ->
+            ?ERROR("Invalid empty variable name~n", []),
+            throw(invalid_variable_name);
+        _  ->
+            [Head2 | Rest3]
     end,
-    {Prefix, Head1} = if
-        is_list(Head) ->
-            case string:chr(Head, $:) of
-                0 ->
-                    {undefined, Head};
-                I2 ->
-                    {
-                      string:substr(Head, 1, I2 - 1),
-                      string:substr(Head, I2 + 1)
-                    }
-            end;
-        true ->
-            {undefined, Head}
-    end,
-    if
-        Prefix == "" ->
-            ?ERROR("Invalid empty variable prefix~n", []),
-            throw(invalid_variable_prefix);
-        true ->
-            ok
-    end,
-    Name1 = case Head1 of
-        "" -> Rest1;
-        _  -> [Head1 | Rest1]
-    end,
+    %% Unfold the list, if any.
     Name2 = case Name1 of
         [N] when is_list(N) -> N;
         _                   -> Name1
@@ -180,13 +173,66 @@ collapse(#parser{current = #var_st{name = Name}} = Parser) ->
             ok
     end,
     Var = #var{
-      prefix = Prefix,
-      name   = Name2,
-      attr   = Attr
+      prefix  = Prefix,
+      name    = Name2,
+      attr    = Attr,
+      filters = Filters
     },
     collapse2(Parser, Var);
 collapse(#parser{current = Text} = Parser) ->
     collapse2(Parser, lists:reverse(Text)).
+
+extract_prefix(Name) when is_list(Name) ->
+    case string:chr(Name, $:) of
+        0 ->
+            {Name, undefined};
+        I ->
+            case string:substr(Name, 1, I - 1) of
+                "" ->
+                    ?ERROR("Invalid empty variable prefix~n", []),
+                    throw(invalid_variable_prefix);
+                Prefix ->
+                    {string:substr(Name, I + 1), Prefix}
+            end
+    end;
+extract_prefix(Name) ->
+    {Name, undefined}.
+
+extract_attr(Name) when is_list(Name) ->
+    case string:rchr(Name, $#) of
+        0 ->
+            {Name, undefined};
+        I ->
+            case string:substr(Name, I + 1) of
+                "" ->
+                    ?ERROR("Invalid empty variable attribute~n", []),
+                    throw(invalid_variable_attr);
+                Attr ->
+                    {string:substr(Name, 1, I - 1), Attr}
+            end
+    end;
+extract_attr(Name) ->
+    {Name, undefined}.
+
+extract_filters(Name) when is_list(Name) ->
+    extract_filters(Name, []);
+extract_filters(Name) ->
+    {Name, []}.
+
+extract_filters(Name, Filters) ->
+    case string:rchr(Name, $|) of
+        0 ->
+            {Name, Filters};
+        I ->
+            case string:substr(Name, I + 1) of
+                "" ->
+                    ?ERROR("Invalid empty variable filter~n", []),
+                    throw(invalid_variable_filter);
+                Filter ->
+                    extract_filters(string:substr(Name, 1, I - 1),
+                      [Filter | Filters])
+            end
+    end.
 
 %% Append it to the opened variable or the main list.
 collapse2(#parser{result = [#var_st{opened = true} = Var | Result]} = Parser,
@@ -336,51 +382,55 @@ expand_parts(State, [], Result) ->
 get(State, Var) ->
     get(State, Var, undefined).
 
-get(#state{path = Value} = State,
+get(State, Var, Type_Mod) ->
+    {State1, Value} = get2(State, Var, Type_Mod),
+    run_filters(State1, Var, Value, Type_Mod).
+
+get2(#state{path = Value} = State,
   #var{prefix = undefined, name = "PATH"}, undefined) ->
     {State, Value};
-get(#state{client_port = Value_C} = State,
+get2(#state{client_port = Value_C} = State,
   #var{prefix = undefined, name = "CLIENT_PORT"}, undefined) ->
     Value_S = otis_type_port:to_string(Value_C),
     {State, Value_S};
-get(#state{client_port = Value_C} = State,
+get2(#state{client_port = Value_C} = State,
   #var{prefix = undefined, name = "CLIENT_PORT"}, otis_type_port) ->
     {State, Value_C};
-get(#state{server_name = Value} = State,
+get2(#state{server_name = Value} = State,
   #var{prefix = undefined, name = "SERVER_NAME"}, undefined) ->
     {State, Value};
-get(#state{server_port = Value_C} = State,
+get2(#state{server_port = Value_C} = State,
   #var{prefix = undefined, name = "SERVER_PORT"}, undefined) ->
     Value_S = otis_type_port:to_string(Value_C),
     {State, Value_S};
-get(#state{server_port = Value_C} = State,
+get2(#state{server_port = Value_C} = State,
   #var{prefix = undefined, name = "SERVER_PORT"}, otis_type_port) ->
     {State, Value_C};
-get(#state{method = Value} = State,
+get2(#state{method = Value} = State,
   #var{prefix = undefined, name = "METHOD"}, undefined) ->
     {State, Value};
-get(#state{scheme = Value} = State,
+get2(#state{scheme = Value} = State,
   #var{prefix = undefined, name = "SCHEME"}, undefined) ->
     {State, Value};
-get(#state{query_parsed = false, query_str = Value} = State,
+get2(#state{query_parsed = false, query_str = Value} = State,
   #var{prefix = undefined, name = "QUERY"},
   undefined) ->
     {State, Value};
-get(State, #var{prefix = undefined, name = "QUERY"} = Var, Type_Mod) ->
+get2(State, #var{prefix = undefined, name = "QUERY"} = Var, Type_Mod) ->
     State1 = otis_utils:stringify_query(State),
-    get(State1, Var, Type_Mod);
-get(#state{fragment = Value} = State,
+    get2(State1, Var, Type_Mod);
+get2(#state{fragment = Value} = State,
   #var{prefix = undefined, name = "FRAGMENT"}, undefined) ->
     {State, Value};
-get(State, #var{prefix = undefined, name = "URI"}, undefined) ->
+get2(State, #var{prefix = undefined, name = "URI"}, undefined) ->
     otis_utils:format_uri(State);
-get(#state{rule_name = Rule_Name} = State,
+get2(#state{rule_name = Rule_Name} = State,
   #var{prefix = undefined, name = "RULE"}, undefined) ->
     {State, Rule_Name};
-get(State,
+get2(State,
   #var{prefix = undefined, name = "STATE"}, undefined) ->
     {State, lists:flatten(io_lib:format("~p", [State]))};
-get(
+get2(
   #state{method = Method, headers = Headers,
     response = Is_Resp, code = Code, reason = Reason,
     rheaders = RHeaders, http_ver = {Maj, Min}} = State,
@@ -406,7 +456,7 @@ get(
               [Method, Path, Maj, Min, Headers1]),
             {State1, Req}
     end;
-get(#state{vars = Vars} = State,
+get2(#state{vars = Vars} = State,
   #var{prefix = undefined, name = "USER_VARS"}, undefined) ->
     List1 = lists:keysort(1, dict:to_list(Vars)),
     Max_Fun = fun({N, _}, M) ->
@@ -429,21 +479,21 @@ get(#state{vars = Vars} = State,
       || {_, {N, VS, TM, VC}} <- List1
     ],
     {State, lists:flatten(List2)};
-get(State, #var{name = [C | _] = Name} = Var, Type_Mod)
+get2(State, #var{name = [C | _] = Name} = Var, Type_Mod)
   when not is_integer(C) ->
     %% The variable name is a variable itself: expand it.
     Name1 = expand(State, Name),
     Var1  = Var#var{
       name = Name1
     },
-    get(State, Var1, Type_Mod);
-get(State, #var{prefix = undefined, name = Name}, Type_Mod) ->
+    get2(State, Var1, Type_Mod);
+get2(State, #var{prefix = undefined, name = Name}, Type_Mod) ->
     get_uservar(State, Name, Type_Mod);
-get(State, #var{prefix = "query", name = Name}, Type_Mod) ->
+get2(State, #var{prefix = "query", name = Name}, Type_Mod) ->
     get_query(State, Name, Type_Mod);
-get(State, #var{prefix = "header", name = Name}, Type_Mod) ->
+get2(State, #var{prefix = "header", name = Name}, Type_Mod) ->
     get_header(State, Name, Type_Mod);
-get(State, #var{prefix = "rheader", name = Name}, Type_Mod) ->
+get2(State, #var{prefix = "rheader", name = Name}, Type_Mod) ->
     get_rheader(State, Name, Type_Mod).
 
 get_uservar(State, Name) ->
@@ -811,3 +861,25 @@ unset_loop2(Name, [Item | Rest], List) ->
     unset_loop2(Name, Rest, [Item | List]);
 unset_loop2(_, [], List) ->
     lists:reverse(List).
+
+%% -------------------------------------------------------------------
+%% Filters.
+%% -------------------------------------------------------------------
+
+run_filters(State, Var, Value) ->
+    run_filters(State, Var, Value, undefined).
+
+run_filters(State, #var{filters = Filters}, Value, Type_Mod) ->
+    run_filters2(State, Filters, Value, Type_Mod).
+
+run_filters2(State, ["escape_uri" | Rest], Value, undefined) ->
+    Value1 = otis_utils:escape_uri(Value),
+    run_filters2(State, Rest, Value1, undefined);
+run_filters2(State, ["unescape_uri" | Rest], Value, undefined) ->
+    Value1 = otis_utils:unescape_uri(Value),
+    run_filters2(State, Rest, Value1, undefined);
+run_filters2(State, [Filter | Rest], Value, Type_Mod) ->
+    ?WARNING("Unsupported filter (with type ~s): ~p~n", [Type_Mod, Filter]),
+    run_filters2(State, Rest, Value, Type_Mod);
+run_filters2(State, [], Value, _) ->
+    {State, Value}.
