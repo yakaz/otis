@@ -1,1 +1,1 @@
-?FUNCTION(_, New_State)           -> New_State.
+?FUNCTION(_, New_State)              -> New_State.
