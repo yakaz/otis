@@ -1,0 +1,35 @@
+%% vim:ft=erlang:
+
+%% TEST
+{setup,
+  fun() ->
+      application:start(syslogger),
+      application:start(yaml),
+      application:start(otis)
+  end,
+  fun(_) ->
+      error_logger:tty(false),
+      ok = application:stop(otis),
+      ok = application:stop(yaml),
+      ok = application:stop(syslogger)
+  end,
+  [
+    ?_assertMatch({var, undefined, "name", undefined, []},
+      otis_var:parse("$(name)")),
+    ?_assertMatch({var, "prefix", "name", undefined, []},
+      otis_var:parse("$(prefix:name)")),
+    ?_assertMatch({var, undefined, "name", "attr", []},
+      otis_var:parse("$(name#attr)")),
+    ?_assertMatch({var, "prefix", "name", "attr", []},
+      otis_var:parse("$(prefix:name#attr)")),
+    ?_assertMatch({var, undefined, "name", undefined,
+          ["filter1"]},
+      otis_var:parse("$(name|filter1)")),
+    ?_assertMatch({var, undefined, "name", undefined,
+          ["filter1", "filter2"]},
+      otis_var:parse("$(name|filter1|filter2)")),
+    ?_assertMatch({var, "prefix", "name", "attr",
+          ["filter1", "filter2"]},
+      otis_var:parse("$(prefix:name#attr|filter1|filter2)"))
+  ]
+}

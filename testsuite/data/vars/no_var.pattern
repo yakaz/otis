@@ -1,0 +1,22 @@
+%% vim:ft=erlang:
+
+%% TEST
+{setup,
+  fun() ->
+      application:start(syslogger),
+      application:start(yaml),
+      application:start(otis)
+  end,
+  fun(_) ->
+      error_logger:tty(false),
+      ok = application:stop(otis),
+      ok = application:stop(yaml),
+      ok = application:stop(syslogger)
+  end,
+  [
+    ?_assertMatch("",            otis_var:parse("")),
+    ?_assertMatch("foobar",      otis_var:parse("foobar")),
+    ?_assertMatch(4,             otis_var:parse(4)),
+    ?_assertMatch({192,168,1,1}, otis_var:parse({192,168,1,1}))
+  ]
+}

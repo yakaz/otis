@@ -27,7 +27,10 @@ yakaz.conf
       end
     ),
 
+    %% ---------------------------------------------------------------
     %% Clean slashes.
+    %% ---------------------------------------------------------------
+
     ?_assertMatch(
       "GET / HTTP/1.1\r\n"
       "Host: www.yakaz.fr\r\n"
@@ -71,7 +74,10 @@ yakaz.conf
       otis_reqrw_engine:request("http://www.yakaz.fr/////about/////")
     ),
 
+    %% ---------------------------------------------------------------
     %% Normalize host.
+    %% ---------------------------------------------------------------
+
     ?_assertMatch(
       "GET / HTTP/1.1\r\n"
       "Host: www.yakaz.fr\r\n"
@@ -85,12 +91,505 @@ yakaz.conf
       otis_reqrw_engine:request("http://paris.yakaz.fr/")
     ),
     ?_assertMatch(
-      "GET / HTTP/1.1\r\n"
-      "Host: www.yakaz.fr\r\n"
+      "HTTP/1.1 301 Moved Permanently\r\n"
+      "Location: http://www.yakaz.fr/\r\n"
       "\r\n",
       otis_reqrw_engine:request("http://yakaz.fr/")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% HTTP bind.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /http-bind HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/http-bind")
+    ),
+    ?_assertMatch(
+      "GET /results.php?checkuniv=http-bind&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/http-bind/")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% Components, sprites and CSS versioning.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /img/logo.png HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/img/logo.png")
+    ),
+    ?_assertMatch(
+      "GET /img/sp_all.png HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/img/sp_all.13.png")
+    ),
+    ?_assertMatch(
+      "GET /css/main.css HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/css/main.css")
+    ),
+    ?_assertMatch(
+      "GET /css/main.css HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/css/main.3.css")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% Redirect.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /redirect.php?p=http://www.example.org/%3Fid%3D1 HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/s/?http://www.example.org/%3Fid%3D1")
+    ),
+    ?_assertMatch(
+      "GET /redirect.php?p=http://www.example.org/%3Fid%3D1 HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/r/?http://www.example.org/%3Fid%3D1")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% /img2-2/.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "HTTP/1.1 301 Moved Permanently\r\n"
+      "Location: http://media.yakaz.com/imgv2-2/miscellaneous/2011/06/11-22.jpg\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/imgv2-2/2011/06/11-22.jpg")
+    ),
+    ?_assertMatch(
+      "HTTP/1.1 301 Moved Permanently\r\n"
+      "Location: http://media.yakaz.com/imgv2-2/miscellaneous/2011/06/big-11-22.jpg\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/imgv2-2/2011/06/big-11-22.jpg")
+    ),
+    
+    %% ---------------------------------------------------------------
+    %% Neighbor profile.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /results.php?mod=rewrite&match=people HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/neighbors/")
+    ),
+    ?_assertMatch(
+      "GET /results.php?yuid=bob&mod=rewrite&lo=3 HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/neighbors/bob")
+    ),
+    ?_assertMatch(
+      "GET /results.php?yuid=bob&view=badges&mod=rewrite&lo=3 HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/neighbors/bob/badges")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% Ad page.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /results.php?docid=foobar&mod=rewrite&lo=4 HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/posts/foobar")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% Components.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /component/chat/roster.js HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/component/chat/roster.4.js")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% /conv/.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "HTTP/1.1 302 Moved Temporarily\r\n"
+      "Location: http://www.yakaz.com/results.php?param=1#focus=foobar&lo=2\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/conv/foobar?param=1")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% Webservices.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /ws/online.yaws?action=online_img&user=foobar HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/ws/online/foobar-20110622.png")
+    ),
+    {generator,
+      fun() ->
+          [
+            begin
+                Req =
+                  "GET /" ++ WS ++ "/pathinfo?querystring HTTP/1.1\r\n"
+                  "Host: www.yakaz.com\r\n"
+                  "\r\n",
+                ?_assertMatch(
+                  Req,
+                  otis_reqrw_engine:request(
+                    "http://www.yakaz.com/" ++ WS ++ "/pathinfo?querystring")
+                )
+            end
+            || WS <- [
+              "ejabberd_mod_smuc",
+              "fileuploader",
+              "token_bucket",
+              "wayne",
+              "ws"
+            ]
+          ]
+      end
+    },
+
+    %% ---------------------------------------------------------------
+    %% Directories.
+    %% ---------------------------------------------------------------
+
+    {generator,
+      fun() ->
+          [
+            begin
+                Req =
+                  "GET /" ++ Dir ++ "/pathinfo?querystring HTTP/1.1\r\n"
+                  "Host: www.yakaz.com\r\n"
+                  "\r\n",
+                ?_assertMatch(
+                  Req,
+                  otis_reqrw_engine:request(
+                    "http://www.yakaz.com/" ++ Dir ++ "/pathinfo?querystring")
+                )
+            end
+            || Dir <- [
+              "about",
+              "account",
+              "admin2plazzad!",
+              "ajax",
+              "component",
+              "css",
+              "error",
+              "extjs",
+              "facebook",
+              "frame",
+              "img",
+              "internalservice",
+              "js",
+              "mobile",
+              "php",
+              "push",
+              "services",
+              "tools",
+              "webmasters"
+            ]
+          ]
+      end
+    },
+
+    %% ---------------------------------------------------------------
+    %% /...+item-....htm.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /item-foobarb4z.htm HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/foo-bar-B4Z-item-foobarb4z.htm")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% KML.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /kml.php?univ=foo&what=bar&where=baz HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/foo_bar_baz.kml")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% text/vnd.wap.wml.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /mobi/ HTTP/1.1\r\n"
+      "Accept: text/vnd.wap.wml\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/foobar", [{"Accept", "text/vnd.wap.wml"}])
+    ),
+    ?_assertMatch(
+      "GET /mobi/ HTTP/1.1\r\n"
+      "User-Agent: foo wap bar\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/foobar", [{"User-Agent", "foo wap bar"}])
+    ),
+    ?_assertMatch(
+      "GET /mobi/ HTTP/1.1\r\n"
+      "User-Agent: foo Nokia7110 bar\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/foobar", [{"User-Agent", "foo Nokia7110 bar"}])
+    ),
+    ?_assertMatch(
+      "GET /results.php?what=mobi&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Accept: text/vnd.wap.wml\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/mobi", [{"Accept", "text/vnd.wap.wml"}])
+    ),
+    ?_assertMatch(
+      "GET /results.php?what=mobi&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "User-Agent: foo wap bar\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/mobi", [{"User-Agent", "foo wap bar"}])
+    ),
+    ?_assertMatch(
+      "GET /results.php?what=mobi&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "User-Agent: foo Nokia7110 bar\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/mobi", [{"User-Agent", "foo Nokia7110 bar"}])
+    ),
+    ?_assertMatch(
+      "HTTP/1.1 302 Moved Temporarily\r\n"
+      "Location: http://www.yakaz.com/tools/mobile.php\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/mobi")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% robots.txt.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /robots.php HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/robots.txt")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% Items & profiles.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /item.php?post_uid=foobar&kind=ad&mod=rewrite HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/item-foobar.htm")
+    ),
+    ?_assertMatch(
+      "GET /item.php?post_uid=foobar&kind=profile&mod=rewrite HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/profile-foobar.htm")
+    ),
+    ?_assertMatch(
+      "GET /results.php?where=item&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/item.htm")
+    ),
+    ?_assertMatch(
+      "GET /results.php?where=profile&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/profile.htm")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% Popular searches.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /popularsearches.php?first=x&pg=foobar&univ=housing HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/property/popularsearches-x-foobar")
+    ),
+    ?_assertMatch(
+      "GET /popularsearches.php?first=x&pg=foobar&univ=cars HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/coches/popularsearches-x-foobar")
+    ),
+    ?_assertMatch(
+      "GET /popularsearches.php?first=x&pg=foobar&univ=motorbikes HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/motorrader/popularsearches-x-foobar")
+    ),
+    ?_assertMatch(
+      "GET /popularsearches.php?first=x&pg=foobar&univ=miscellaneous HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/kaufen-verkaufen/popularsearches-x-foobar")
+    ),
+    ?_assertMatch(
+      "GET /popularsearches.php?first=x&pg=foobar&univ=jobs HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/lavoro/popularsearches-x-foobar")
+    ),
+    ?_assertMatch(
+      "GET /popularsearches.php?first=x&pg=foobar&univ=all HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/popularsearches-x-foobar")
+    ),
+    ?_assertMatch(
+      "GET /results.php?checkuniv=unknown-universe&what=popularsearches-x-foobar&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/unknown-universe/popularsearches-x-foobar")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% Universes.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /results.php?what=foobar&univ=housing&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/property/foobar")
+    ),
+    ?_assertMatch(
+      "GET /results.php?what=foobar&univ=cars&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/coches/foobar")
+    ),
+    ?_assertMatch(
+      "GET /results.php?what=foobar&univ=motorbikes&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/motorrader/foobar")
+    ),
+    ?_assertMatch(
+      "GET /results.php?what=foobar&univ=miscellaneous&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/kaufen-verkaufen/foobar")
+    ),
+    ?_assertMatch(
+      "GET /results.php?what=foobar&univ=jobs&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/lavoro/foobar")
+    ),
+    ?_assertMatch(
+      "GET /results.php?checkuniv=unknown-universe&what=foobar&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/unknown-universe/foobar")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% !*.{php,xml,png,jpg,ico,html,htm,dtd}.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /results.php?id=1&what=foobar&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/foobar?id=1")
+    ),
+    ?_assertMatch(
+      "GET /foobar.png?id=1 HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/foobar.png?id=1")
+    ),
+
+    %% ---------------------------------------------------------------
+    %% zZz9.htm.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /results.php?where=foo-bar-2011%2B06&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/foo-bar-2011%2B06.htm")
+    ),
+    ?_assertMatch(
+      "GET /foo-bar-2011%2B06.htm?id=1 HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/foo-bar-2011%2B06.htm?id=1")
     )
 
-    %% Remove engine not remove: it's needed by cover:analyse_to_file/1.
+    %% Engine not remove: it's needed by cover:analyse_to_file/1.
   ]
 }

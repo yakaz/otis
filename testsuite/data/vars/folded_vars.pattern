@@ -1,0 +1,60 @@
+%% vim:ft=erlang:
+
+%% TEST
+{setup,
+  fun() ->
+      application:start(syslogger),
+      application:start(yaml),
+      application:start(otis)
+  end,
+  fun(_) ->
+      error_logger:tty(false),
+      ok = application:stop(otis),
+      ok = application:stop(yaml),
+      ok = application:stop(syslogger)
+  end,
+  [
+    ?_assertMatch(
+      {var, undefined,
+        [{var, undefined, "center", undefined, []}],
+        undefined, []},
+      otis_var:parse("$($(center))")),
+    ?_assertMatch(
+      {var, undefined,
+        ["left", {var, undefined, "center", undefined, []}],
+        undefined, []},
+      otis_var:parse("$(left$(center))")),
+    ?_assertMatch(
+      {var, undefined,
+        [{var, undefined, "center", undefined, []}, "right"],
+        undefined, []},
+      otis_var:parse("$($(center)right)")),
+    ?_assertMatch(
+      {var, undefined,
+        ["left", {var, undefined, "center", undefined, []}, "right"],
+        undefined, []},
+      otis_var:parse("$(left$(center)right)")),
+    ?_assertMatch(
+      {var, "prefix",
+        ["left", {var, undefined, "center", undefined, []}, "right"],
+        "attr", []},
+      otis_var:parse("$(prefix:left$(center)right#attr)")),
+    ?_assertMatch(
+      {var, undefined,
+        ["left", {var, "prefix", "center", "attr", []}, "right"],
+        undefined, []},
+      otis_var:parse("$(left$(prefix:center#attr)right)")),
+    ?_assertMatch(
+      {var, "prefix1",
+        ["left", {var, "prefix2", "center", "attr2", []}, "right"],
+        "attr1", []},
+      otis_var:parse("$(prefix1:left$(prefix2:center#attr2)right#attr1)")),
+    ?_assertMatch(
+      {var, "prefix1",
+        ["left", {var, "prefix2",
+            [{var, undefined, "center", undefined, []}],
+            "attr2", []}, "right"],
+        "attr1", []},
+      otis_var:parse("$(prefix1:left$(prefix2:$(center)#attr2)right#attr1)"))
+  ]
+}
