@@ -738,6 +738,11 @@ set_uservar(State, [C | _] = Name, Value, Type_Mod)
     %% The variable name is a variable itself: expand it.
     Name1 = expand(State, Name),
     set_uservar(State, Name1, Value, Type_Mod);
+set_uservar(#state{vars = Vars} = State, Name, "", undefined) ->
+    Vars1 = dict:erase(Name, Vars),
+    State#state{
+      vars = Vars1
+    };
 set_uservar(#state{vars = Vars} = State, Name, Value, undefined) ->
     Vars1 = dict:store(Name, {Name, Value, undefined, undefined}, Vars),
     State#state{

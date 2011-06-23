@@ -17,6 +17,8 @@
     %% After expansion, it may be a non-user variable, like $(PATH).
     {State3, Value} = otis_var:get(State2, Var1, Type_Mod),
     case Value of
-        Expected when Value /= undefined  -> ?NEXT_EXPR(State3);
+        Expected  when Value /= undefined -> ?NEXT_EXPR(State3);
+        ""        when Expected == ""     -> ?NEXT_EXPR(State3);
+        undefined when Expected == ""     -> ?NEXT_EXPR(State3);
         _                                 -> otis_utils:abort(State3)
     end.

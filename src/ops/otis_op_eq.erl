@@ -53,6 +53,9 @@ create2(Ruleset, Keyword, Var, #yaml_str{text = Value}) ->
     %% String exact matching.
     Value1 = otis_var:parse(Value),
     create3(Ruleset, Keyword, Var, Value1, string);
+create2(Ruleset, Keyword, Var, #yaml_null{}) ->
+    %% Empty or no value at all.
+    create3(Ruleset, Keyword, Var, "", string);
 create2(Ruleset, Keyword, Var, #yaml_int{value = Value}) ->
     %% Integer exact matching.
     create3(Ruleset, Keyword, Var, Value, int);
@@ -236,6 +239,11 @@ loop(Name, Value, Type_Mod,
   [Item | List_Tail], List_Head, Converted) ->
     loop(Name, Value, Type_Mod,
       List_Tail, [Item | List_Head], Converted);
+loop(_, "", undefined, [], _, false) ->
+    match;
+loop(_, "", undefined, [], List, true) ->
+    List1 = lists:reverse(List),
+    {match, List1};
 loop(_, _, _, [], _, false) ->
     nomatch;
 loop(_, _, _, [], List, true) ->
