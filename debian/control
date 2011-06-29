@@ -12,3 +12,6 @@ Priority: optional
 Depends: ${misc:Depends}, ${erlang:Depends}, erlang-yaml
 Description: HTTP request rewriting engine in Erlang
  .
+ Rules are written in a YAML configuration file. This file is then used
+ to generate a specific Erlang module
+ .
