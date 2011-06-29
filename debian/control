@@ -2,13 +2,13 @@ Source: otis
 Section: devel
 Priority: optional
 Maintainer: Jean-Sébastien Pédron <jean-sebastien@yakaz.com>
-Build-Depends: debhelper (>= 5.0.0), autotools-dev, erlang-dev (>= 1:13.b.1-3)
-Standards-Version: 3.8.4
+Build-Depends: debhelper (>= 8), autotools-dev, erlang-dev (>= 1:14.b.2), erlang-tools, erlang-yaml, erlang-yaws (>= 1.90)
+Standards-Version: 3.9.1
 
 Package: otis
 Architecture: all
 Section: devel
 Priority: optional
-Depends: ${erlang:Depends}
+Depends: ${misc:Depends}, ${erlang:Depends}, erlang-yaml
 Description: HTTP request rewriting engine in Erlang
  .

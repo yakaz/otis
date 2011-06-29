@@ -1,5 +1,3 @@
-# $Id: Makefile.am 2923 2010-05-10 14:35:51Z jean.sebastien.pedron $
-
 privdir = $(ERLANG_INSTALL_LIB_DIR_otis)/priv
 
 nobase_dist_priv_DATA = sys.config					\

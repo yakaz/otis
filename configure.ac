@@ -2,19 +2,15 @@ dnl ------------------------------------------------------------------
 dnl Autoconf initialization.
 dnl ------------------------------------------------------------------
 
-AC_INIT([otis], [0.1.0], [team@yakaz.com])
-
-dnl Release date.
-APP_RELEASE_DATE=
+AC_INIT([otis], [1.0.0])
 
 AC_CONFIG_SRCDIR([src/otis_app.erl])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([ac-aux])
 
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([1.11 -Wall foreign])
 
-AC_PREREQ([2.60])
-AC_REVISION([$Revision: 9842 $])
+AC_PREREQ([2.64])
 
 ECHO=echo
 COLORED_ECHO_INIT
@@ -42,58 +38,14 @@ expand_var () {
 }
 
 dnl ------------------------------------------------------------------
-dnl Versionning.
-dnl ------------------------------------------------------------------
-
-dnl Is this a final release?
-is_release=0
-if test "x${APP_RELEASE_DATE}" != "x"; then
-	is_release=1
-fi
-
-dnl Working copy revision.
-dnl The revision is appended to the tarball name when the release date
-dnl is not set.
-if test $is_release -eq 0; then
-	dnl Query working copy revision (taken from FreeBSD's newvers.sh).
-	for dir in /bin /usr/bin /usr/local/bin; do
-		if test -d "${srcdir}/.svn" -a -x "${dir}/svnversion" ; then
-			APP_REPOREV=`${dir}/svnversion ${srcdir} | sed 's/^[[^:]]*:/r/'`
-			break
-		fi
-		if test -d "${srcdir}/.git" -a -x "${dir}/git" ; then
-			APP_REPOREV=`${dir}/git --git-dir=${srcdir}/.git log -1 --date=short --pretty='%cd-%h'`
-			break
-		fi
-	done
-
-	if test "x$APP_REPOREV" = "x"; then
-		if test -f "$srcdir/REPOREV"; then
-			APP_REPOREV=`cat $srcdir/REPOREV`
-		fi
-	else
-		echo $APP_REPOREV > $srcdir/REPOREV
-	fi
-	if test "x$APP_REPOREV" != "x"; then
-		APP_DISTSUFFIX="-$APP_REPOREV"
-	fi
-fi
-AM_CONDITIONAL([DIST_REPOREV], [test -f "$srcdir/REPOREV"])
-
-dnl ------------------------------------------------------------------
 dnl Options.
 dnl ------------------------------------------------------------------
 
 dnl Debugging option.
-if test $is_release -eq 0; then
-	default_enable_debug="yes"
-else
-	default_enable_debug="no"
-fi
 AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],
-	    [turn on debugging [[default=auto]]]),,
-	enable_debug=$default_enable_debug)
+	    [turn on debugging [[default=yes]]]),,
+	enable_debug=yes)
 if test "x${enable_debug}" = "xyes"; then
 	append_to_EMKOPTS "{d, debug}"
 fi
@@ -134,21 +86,9 @@ COLORED_ECHO([%BErlang environment%b])
 dnl Available flags.
 AC_ARG_WITH([erlang],
 	AC_HELP_STRING([--with-erlang=PREFIX],
-	    [prefix where build machine's Erlang is installed (optional)]),
+	    [prefix where Erlang is installed (optional)]),
 	with_erlang=${withval%/},
 	with_erlang="")
-
-AC_ARG_WITH([yaml],
-	AC_HELP_STRING([--with-yaml=PREFIX],
-	    [prefix where yaml is installed (optional)]),
-	with_yaml=${withval%/},
-	with_yaml="")
-
-AC_ARG_WITH([yaws],
-	AC_HELP_STRING([--with-yaws=PREFIX],
-	    [prefix where yaws is installed (optional)]),
-	with_yaws=${withval%/},
-	with_yaws="")
 
 dnl erl(1) is used to compile Erlang modules.
 if test "x${with_erlang}" = "x"; then
@@ -188,6 +128,28 @@ escript(1) not found. Fill the ESCRIPT variable with escript(1) path if
 you want to use the testsuite.])
 fi
 
+dnl dialyzer(1) is used by the testsuite.
+AC_ARG_VAR([DIALYZER], [Erlang/OTP discrepancy analyzer [autodetected]])
+
+if test "x${DIALYZER}" = "x"; then
+	if test "x${with_erlang}" = "x"; then
+		AC_PATH_PROG([DIALYZER], [dialyzer],,)
+	else
+		erl_path="${with_erlang}/bin"
+		AC_PATH_PROG([DIALYZER], [dialyzer],,
+		    [$erl_path$PATH_SEPARATOR$PATH])
+	fi
+else
+	AC_MSG_CHECKING([for dialyzer])
+	AC_MSG_RESULT([$DIALYZER])
+fi
+
+if test "x${DIALYZER}" = "x"; then
+	AC_MSG_WARN([
+dialyzer(1) not found. Fill the DIALYZER variable with dialyzer(1) path if
+you want it to be run during the testsuite.])
+fi
+
 dnl Declare ERL_LIBS as precious.
 AC_ARG_VAR([ERL_LIBS], [Erlang/OTP applications search path [none]])
 
@@ -199,32 +161,14 @@ dnl Get ERTS version.
 ERLANG_CHECK_ERTS
 ERLANG_CHECK_RELEASE
 
-dnl Erlang R13B04 (ERTS 5.7.5) is required.
-AX_COMPARE_VERSION([${ERLANG_ERTS_VER}], [ge], [5.7.5],
-    [is_erlang_r13b04="yes"],
-    [is_erlang_r13b04="no"])
-if test "x${is_erlang_r13b04}" = "xno"; then
+dnl Erlang R14B02 (ERTS 5.8.3) is required.
+AX_COMPARE_VERSION([${ERLANG_ERTS_VER}], [ge], [5.8.3],
+    [is_erlang_r14b02="yes"],
+    [is_erlang_r14b02="no"])
+if test "x${is_erlang_r14b02}" = "xno"; then
 	AC_MSG_ERROR([
-Erlang R13B04 is required but only Erlang $ERLANG_RELEASE was found!])
+Erlang R14B02 is required but only Erlang $ERLANG_RELEASE was found!])
 fi
-
-dnl yaml install directory.
-if test "x${with_yaml}" != "x"; then
-	ERL_LIBS="${with_yaml}:${ERL_LIBS}"
-fi
-export ERL_LIBS
-AC_ERLANG_CHECK_LIB([yaml],, [AC_MSG_ERROR([
-yaml not found.
-
-Provide yaml install path with --with-yaml.])])
-
-dnl yaws install directory.
-if test "x${with_yaws}" != "x"; then
-	ERL_LIBS="${with_yaws}:${ERL_LIBS}"
-fi
-export ERL_LIBS
-AC_ERLANG_CHECK_LIB([yaws],,)
-AM_CONDITIONAL([HAVE_YAWS], [test "x${ERLANG_LIB_DIR_yaws}" != "x"])
 
 dnl Determine directories for installation.
 if test "x${prefix}" = "xNONE"; then
@@ -239,11 +183,111 @@ AC_ERLANG_SUBST_INSTALL_LIB_DIR
 AC_ERLANG_SUBST_INSTALL_LIB_SUBDIR(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
 dnl ------------------------------------------------------------------
-dnl Finale substitutions.
+dnl Erlang applicatons.
+dnl ------------------------------------------------------------------
+
+dnl "compiler" install directory.
+AC_ARG_WITH([erlang_compiler],
+	AC_HELP_STRING([--with-erlang-compiler=PREFIX],
+		       [prefix where the "compiler" Erlang application is installed (optional)]),
+	with_erlang_compiler=${withval%/},
+	with_erlang_compiler="")
+
+ERL_LIBS_save=$ERL_LIBS
+if test "x${with_erlang_compiler}" != "x"; then
+	ERL_LIBS="${with_erlang_compiler}:${ERL_LIBS}"
+fi
+export ERL_LIBS
+AC_ERLANG_CHECK_LIB([compiler],, [AC_MSG_ERROR([
+"compiler" Erlang application not found.
+
+Provide compiler install path with --with-erlang-compiler.])])
+ERL_LIBS=$ERL_LIBS_save
+export ERL_LIBS
+
+dnl "tools" install directory.
+AC_ARG_WITH([erlang_tools],
+	AC_HELP_STRING([--with-erlang-tools=PREFIX],
+		       [prefix where the "tools" Erlang application is installed (optional)]),
+	with_erlang_tools=${withval%/},
+	with_erlang_tools="")
+
+ERL_LIBS_save=$ERL_LIBS
+if test "x${with_erlang_tools}" != "x"; then
+	ERL_LIBS="${with_erlang_tools}:${ERL_LIBS}"
+fi
+export ERL_LIBS
+AC_ERLANG_CHECK_LIB([tools],, [AC_MSG_ERROR([
+"tools" Erlang application not found.
+
+Provide tools install path with --with-erlang-tools.])])
+ERL_LIBS=$ERL_LIBS_save
+export ERL_LIBS
+
+dnl "eunit" install directory.
+AC_ARG_WITH([erlang_eunit],
+	AC_HELP_STRING([--with-erlang-eunit=PREFIX],
+		       [prefix where the "eunit" Erlang application is installed (optional)]),
+	with_erlang_eunit=${withval%/},
+	with_erlang_eunit="")
+
+ERL_LIBS_save=$ERL_LIBS
+if test "x${with_erlang_eunit}" != "x"; then
+	ERL_LIBS="${with_erlang_eunit}:${ERL_LIBS}"
+fi
+export ERL_LIBS
+AC_ERLANG_CHECK_LIB([eunit],, [AC_MSG_WARN([
+"eunit" Erlang application not found.
+
+Provide eunit install path with --with-erlang-eunit.])])
+ERL_LIBS=$ERL_LIBS_save
+export ERL_LIBS
+
+dnl "yaml" install directory.
+AC_ARG_WITH([erlang_yaml],
+	AC_HELP_STRING([--with-erlang-yaml=PREFIX],
+		       [prefix where the "yaml" Erlang application is installed (optional)]),
+	with_erlang_yaml=${withval%/},
+	with_erlang_yaml="")
+
+ERL_LIBS_save=$ERL_LIBS
+if test "x${with_erlang_yaml}" != "x"; then
+	ERL_LIBS="${with_erlang_yaml}:${ERL_LIBS}"
+fi
+export ERL_LIBS
+AC_ERLANG_CHECK_LIB([yaml],, [AC_MSG_ERROR([
+"yaml" Erlang application not found.
+
+Provide yaml install path with --with-erlang-yaml.])])
+ERL_LIBS=$ERL_LIBS_save
+export ERL_LIBS
+
+dnl "yaws" install directory.
+AC_ARG_WITH([erlang_yaws],
+	AC_HELP_STRING([--with-erlang-yaws=PREFIX],
+		       [prefix where the "yaws" Erlang application is installed (optional)]),
+	with_erlang_yaws=${withval%/},
+	with_erlang_yaws="")
+
+ERL_LIBS_save=$ERL_LIBS
+if test "x${with_erlang_yaws}" != "x"; then
+	ERL_LIBS="${with_erlang_yaws}:${ERL_LIBS}"
+fi
+export ERL_LIBS
+AC_ERLANG_CHECK_LIB([yaws],, [AC_MSG_WARN([
+"yaws" Erlang application not found.
+
+Provide yaws install path with --with-erlang-yaws.])])
+ERL_LIBS=$ERL_LIBS_save
+export ERL_LIBS
+
+AM_CONDITIONAL([HAVE_YAWS], [test "x${ERLANG_LIB_DIR_yaws}" != "x"])
+
+dnl ------------------------------------------------------------------
+dnl Final substitutions.
 dnl ------------------------------------------------------------------
 
 AC_SUBST(EMKOPTS)
-AC_SUBST(ERL_LIBS)
 
 AC_SUBST(APP_RELEASE_DATE)
 AC_SUBST(APP_DISTSUFFIX)
