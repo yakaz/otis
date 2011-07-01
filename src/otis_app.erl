@@ -176,7 +176,8 @@ start(_, _) ->
     Steps = [
       check_params,
       setup_syslog,
-      add_save_dir_to_code_path
+      add_save_dir_to_code_path,
+      load_engine
     ],
     case do_start(Steps) of
         {error, Reason, Message} ->
@@ -224,6 +225,23 @@ do_start([add_save_dir_to_code_path | Rest]) ->
     %% modules.
     code:add_pathz(get_param(engine_save_dir)),
     do_start(Rest);
+do_start([load_engine | Rest]) ->
+    %% If the user specified a configuration file, load the engine.
+    case get_param(config) of
+        none ->
+            do_start(Rest);
+        _ ->
+            try
+                otis:reload_engine(),
+                do_start(Rest)
+            catch
+                _:Exception ->
+                    Message = io_lib:format(
+                      "~s: failed to load rewrite rules: ~p~n",
+                      [?APPLICATION, Exception]),
+                    {error, rules_load_failure, Message}
+            end
+    end;
 do_start([]) ->
     otis_sup:start_link().
 
