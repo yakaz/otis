@@ -1,3 +1,12 @@
+otis (1.0.0-2) experimental; urgency=low
+
+  * Fix a bug where otis_utils:parse_host/{1,2} would crash if the host is
+    undefined. This could happen with a request such as:
+      GET / HTTP/1.0
+    The Host header is missing and Yaws' #headers.host is undefined.
+
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Fri, 27 May 2011 16:16:31 +0200
+
 otis (1.0.0-1) experimental; urgency=low
 
   * Initial release.

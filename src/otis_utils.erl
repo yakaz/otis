@@ -77,6 +77,8 @@ parse_scheme([C | Rest], Scheme) ->
 parse_scheme([], _) ->
     undefined.
 
+parse_host(undefined, Scheme) ->
+    parse_host("", Scheme);
 parse_host([$[ | Rest], Scheme) ->
     parse_host_rfc2732(Rest, "", Scheme);
 parse_host(String, Scheme) ->
