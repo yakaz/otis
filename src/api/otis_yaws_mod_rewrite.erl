@@ -260,10 +260,26 @@ headers_from_yaws2(#headers{transfer_encoding = Value} = Yaws,
       | Headers],
     headers_from_yaws2(Yaws, Rest, Headers1);
 headers_from_yaws2(#headers{x_forwarded_for = Value} = Yaws,
-  [x_forwarded_for| Rest], Headers) when Value /= undefined ->
+  [x_forwarded_for | Rest], Headers) when Value /= undefined ->
     Headers1 = [
       {"x-forwarded-for", Value, undefined, undefined}
       | Headers],
+    headers_from_yaws2(Yaws, Rest, Headers1);
+headers_from_yaws2(#headers{other = Yaws_Hds} = Yaws,
+  [other | Rest], Headers) when Yaws_Hds /= undefined andalso Yaws_Hds /= [] ->
+    Fun = fun({http_header, _, Name0, _, Value0}) ->
+        Name1 = if
+            is_atom(Name0) -> atom_to_list(Name0);
+            true           -> Name0
+        end,
+        Name  = string:to_lower(Name1),
+        Value = if
+            is_binary(Value0) -> binary_to_list(Value0);
+            true              -> Value0
+        end,
+        {Name, Value, undefined, undefined}
+    end,
+    Headers1 = Headers ++ lists:map(Fun, Yaws_Hds),
     headers_from_yaws2(Yaws, Rest, Headers1);
 headers_from_yaws2(Yaws, [_ | Rest], Headers) ->
     headers_from_yaws2(Yaws, Rest, Headers);
@@ -380,11 +396,46 @@ headers_to_yaws2([{"x-forwarded-for", Value, _, _} | Rest], Headers) ->
 headers_to_yaws2([{Name, Value, _, _} | Rest],
   #headers{other = Other} = Headers) ->
     Headers1 = Headers#headers{
-      other = [{http_header, 0, Name, undefined, Value} | Other]
+      other = [{http_header, 0, erlang_header_name(Name), undefined, Value}
+        | Other]
     },
     headers_to_yaws2(Rest, Headers1);
 headers_to_yaws2([], Headers) ->
     Headers.
+
+erlang_header_name("cache-control")       -> 'Cache-Control';
+erlang_header_name("date")                -> 'Date';
+erlang_header_name("pragma")              -> 'Pragma';
+erlang_header_name("upgrade")             -> 'Upgrade';
+erlang_header_name("via")                 -> 'Via';
+erlang_header_name("accept-charset")      -> 'Accept-Charset';
+erlang_header_name("accept-encoding")     -> 'Accept-Encoding';
+erlang_header_name("accept-language")     -> 'Accept-Language';
+erlang_header_name("from")                -> 'From';
+erlang_header_name("max-forwards")        -> 'Max-Forwards';
+erlang_header_name("proxy-authorization") -> 'Proxy-Authorization';
+erlang_header_name("age")                 -> 'Age';
+erlang_header_name("proxy-authenticate")  -> 'Proxy-Authenticate';
+erlang_header_name("public")              -> 'Public';
+erlang_header_name("retry-after")         -> 'Retry-After';
+erlang_header_name("server")              -> 'Server';
+erlang_header_name("vary")                -> 'Vary';
+erlang_header_name("warning")             -> 'Warning';
+erlang_header_name("www-authenticate")    -> 'Www-Authenticate';
+erlang_header_name("allow")               -> 'Allow';
+erlang_header_name("content-base")        -> 'Content-Base';
+erlang_header_name("content-encoding")    -> 'Content-Encoding';
+erlang_header_name("content-language")    -> 'Content-Language';
+erlang_header_name("content-location")    -> 'Content-Location';
+erlang_header_name("content-md5")         -> 'Content-Md5';
+erlang_header_name("content-range")       -> 'Content-Range';
+erlang_header_name("etag")                -> 'Etag';
+erlang_header_name("expires")             -> 'Expires';
+erlang_header_name("last-modified")       -> 'Last-Modified';
+erlang_header_name("set-cookie")          -> 'Set-Cookie';
+erlang_header_name("set-cookie2")         -> 'Set-Cookie2';
+erlang_header_name("proxy-connection")    -> 'Proxy-Connection';
+erlang_header_name(Name)                  -> otis_utils:capitalize_header(Name).
 
 rheaders_to_yaws(Headers) ->
     rheaders_to_yaws2(Headers, []).
