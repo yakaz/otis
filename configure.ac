@@ -2,7 +2,7 @@ dnl ------------------------------------------------------------------
 dnl Autoconf initialization.
 dnl ------------------------------------------------------------------
 
-AC_INIT([otis], [1.0.0])
+AC_INIT([otis], [1.0.1])
 
 AC_CONFIG_SRCDIR([src/otis_app.erl])
 AC_CONFIG_MACRO_DIR([m4])

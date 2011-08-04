@@ -1,3 +1,9 @@
+otis (1.0.1-1) experimental; urgency=low
+
+  * Handle http_error passed through by Yaws.
+
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Thu, 04 Aug 2011 11:30:09 +0200
+
 otis (1.0.0-3) experimental; urgency=low
 
   * Fix a bug where headers were not converted properly from and back to Yaws.
