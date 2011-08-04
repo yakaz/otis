@@ -35,9 +35,9 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
         is_atom(Method0) -> atom_to_list(Method0);
         true             -> Method0
     end,
-    Headers = headers_from_yaws(Headers0),
     {abs_path, Path0} = Req#http_request.path,
     try
+        Headers = headers_from_yaws(Headers0),
         %% Path and query string. This code is in the try/catch if URI
         %% parsing fails.
         {Path, Query}  = otis_utils:split_query(Path0),
@@ -61,6 +61,18 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
         %% structure.
         back_to_yaws(State1, ARG)
     catch
+        throw:{invalid_header, _} ->
+            %% Yaws puts http_error returned from decode_packet in
+            %% "others". We treat this as a 500.
+            ?ERROR("Invalid HTTP request: ~p~n",
+              [ARG#arg{clidata = body_skipped}]),
+            Resp = #rewrite_response{
+              status  = 500,
+              content = otis_utils:response_content(500)
+            },
+            ARG#arg{
+              state = Resp
+            };
         error:{badmatch, _} ->
             %% otis_utils:split_query/1 returned an error. Respond
             %% with a 500 code.
@@ -267,17 +279,20 @@ headers_from_yaws2(#headers{x_forwarded_for = Value} = Yaws,
     headers_from_yaws2(Yaws, Rest, Headers1);
 headers_from_yaws2(#headers{other = Yaws_Hds} = Yaws,
   [other | Rest], Headers) when Yaws_Hds /= undefined andalso Yaws_Hds /= [] ->
-    Fun = fun({http_header, _, Name0, _, Value0}) ->
-        Name1 = if
-            is_atom(Name0) -> atom_to_list(Name0);
-            true           -> Name0
-        end,
-        Name  = string:to_lower(Name1),
-        Value = if
-            is_binary(Value0) -> binary_to_list(Value0);
-            true              -> Value0
-        end,
-        {Name, Value, undefined, undefined}
+    Fun = fun
+        ({http_header, _, Name0, _, Value0}) ->
+            Name1 = if
+                is_atom(Name0) -> atom_to_list(Name0);
+                true           -> Name0
+            end,
+            Name  = string:to_lower(Name1),
+            Value = if
+                is_binary(Value0) -> binary_to_list(Value0);
+                true              -> Value0
+            end,
+            {Name, Value, undefined, undefined};
+        ({http_error, Content}) ->
+            throw({invalid_header, Content})
     end,
     Headers1 = Headers ++ lists:map(Fun, Yaws_Hds),
     headers_from_yaws2(Yaws, Rest, Headers1);
