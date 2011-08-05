@@ -341,14 +341,15 @@ response_content(Code) ->
 
 response_content(Code, _)
   when Code >= 301 andalso Code =< 307 andalso Code /= 304 ->
-    <<>>;
+    {undefined, <<>>};
 response_content(Code, Reason) ->
-    list_to_binary(io_lib:format(
+    Content = list_to_binary(io_lib:format(
         "<html>"
         "<head><title>~b ~s</title></head>"
         "<body><h1>~b ~s</h1></body>"
         "</html>~n",
-        [Code, Reason, Code, Reason])).
+        [Code, Reason, Code, Reason])),
+    {"text/html; charset=UTF-8", Content}.
 
 %% -------------------------------------------------------------------
 %% Used by templates.

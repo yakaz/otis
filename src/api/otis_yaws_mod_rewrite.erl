@@ -61,14 +61,23 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
         %% structure.
         back_to_yaws(State1, ARG)
     catch
-        throw:{invalid_header, _} ->
-            %% Yaws puts http_error returned from decode_packet in
-            %% "others". We treat this as a 500.
+        throw:invalid_request ->
+            %% This happends when:
+            %%   1. The request has no path and Yaws puts the HTTP version
+            %%      in the path.
+            %%   2. Yaws puts http_error returned from decode_packet in
+            %%      "others".
+            %% We answer it with a 400 Bad Request.
             ?ERROR("Invalid HTTP request: ~p~n",
               [ARG#arg{clidata = body_skipped}]),
+            {Content_Type, Content} = otis_utils:response_content(400),
+            RHeaders = rheaders_to_yaws([
+                {"content-type", Content_Type, undefined, undefined}
+              ]),
             Resp = #rewrite_response{
-              status  = 500,
-              content = otis_utils:response_content(500)
+              status  = 400,
+              headers = RHeaders,
+              content = Content
             },
             ARG#arg{
               state = Resp
@@ -76,10 +85,15 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
         error:{badmatch, _} ->
             %% otis_utils:split_query/1 returned an error. Respond
             %% with a 500 code.
-            ?ERROR("Failed to parse URI: ~s", [Path0]),
+            ?ERROR("Failed to parse URI: ~p", [Req#http_request.path]),
+            {Content_Type, Content} = otis_utils:response_content(500),
+            RHeaders = rheaders_to_yaws([
+                {"content-type", Content_Type, undefined, undefined}
+              ]),
             Resp = #rewrite_response{
               status  = 500,
-              content = otis_utils:response_content(500)
+              headers = RHeaders,
+              content = Content
             },
             ARG#arg{
               state = Resp
@@ -88,9 +102,14 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
             %% The otis_reqrw_engine generated module isn't available yet!
             ?ERROR("The \"otis_reqrw_engine\" request rewriting engine "
               "isn't available!~n", []),
+            {Content_Type, Content} = otis_utils:response_content(500),
+            RHeaders = rheaders_to_yaws([
+                {"content-type", Content_Type, undefined, undefined}
+              ]),
             Resp = #rewrite_response{
               status  = 500,
-              content = otis_utils:response_content(500)
+              headers = RHeaders,
+              content = Content
             },
             ARG#arg{
               state = Resp
@@ -101,9 +120,14 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
                 Exception,
                 erlang:get_stacktrace()
               ]),
+            {Content_Type, Content} = otis_utils:response_content(500),
+            RHeaders = rheaders_to_yaws([
+                {"content-type", Content_Type, undefined, undefined}
+              ]),
             Resp = #rewrite_response{
               status  = 500,
-              content = otis_utils:response_content(500)
+              headers = RHeaders,
+              content = Content
             },
             ARG#arg{
               state = Resp
@@ -291,8 +315,8 @@ headers_from_yaws2(#headers{other = Yaws_Hds} = Yaws,
                 true              -> Value0
             end,
             {Name, Value, undefined, undefined};
-        ({http_error, Content}) ->
-            throw({invalid_header, Content})
+        ({http_error, _}) ->
+            throw(invalid_request)
     end,
     Headers1 = Headers ++ lists:map(Fun, Yaws_Hds),
     headers_from_yaws2(Yaws, Rest, Headers1);
