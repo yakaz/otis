@@ -503,6 +503,9 @@ rheaders_to_yaws2([{"content-type", Value, _, _} | Rest], Result) ->
 rheaders_to_yaws2([{"content-length", Value, _, _} | Rest], Result) ->
     Header = {content_length, Value},
     rheaders_to_yaws2(Rest, [{header, Header} | Result]);
+rheaders_to_yaws2([{"content-encoding", Value, _, _} | Rest], Result) ->
+    Header = {content_encoding, Value},
+    rheaders_to_yaws2(Rest, [{header, Header} | Result]);
 rheaders_to_yaws2([{Name, Value, _, _} | Rest], Result) ->
     Name1  = otis_utils:capitalize_header(Name),
     Header = {Name1, Value},
