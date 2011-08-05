@@ -35,8 +35,11 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
         is_atom(Method0) -> atom_to_list(Method0);
         true             -> Method0
     end,
-    {abs_path, Path0} = Req#http_request.path,
     try
+        Path0 = case Req#http_request.path of
+            {abs_path, P0} -> P0;
+            _              -> throw(invalid_request)
+        end,
         Headers = headers_from_yaws(Headers0),
         %% Path and query string. This code is in the try/catch if URI
         %% parsing fails.
