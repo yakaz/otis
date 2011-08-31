@@ -1,3 +1,12 @@
+otis (1.0.2-1) experimental; urgency=low
+
+  * Syslog's facility is now configurable.
+  * Use an atom for "Content-Encoding"'s name.
+  * Handle invalid path in HTTP request.
+  * Fix #rewrite_response when returning a 400/500 status.
+
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Wed, 31 Aug 2011 16:18:28 +0200
+
 otis (1.0.1-1) experimental; urgency=low
 
   * Handle http_error passed through by Yaws.
