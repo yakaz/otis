@@ -168,8 +168,15 @@ back_to_yaws(
 back_to_yaws(
   #state{response = true, code = Code, reason = Reason, rheaders = Headers},
   ARG) ->
-    Headers1 = rheaders_to_yaws(Headers),
-    Content  = otis_utils:response_content(Code, Reason),
+    {Content_Type, Content} = otis_utils:response_content(Code, Reason),
+    Headers1 = case Content_Type of
+        undefined ->
+            rheaders_to_yaws(Headers);
+        _ ->
+            rheaders_to_yaws([
+                {"content-type", Content_Type, undefined, undefined} |
+                Headers])
+    end,
     Resp = #rewrite_response{
       status  = Code,
       headers = Headers1,
