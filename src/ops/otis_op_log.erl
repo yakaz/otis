@@ -24,12 +24,12 @@ create(_, Keyword, #yaml_str{text = Format_String}) ->
     Prepared = otis_var:parse(Format_String),
     [#op_log{
         format_str = Prepared,
-        line       = yaml_repr:node_line(Keyword),
-        col        = yaml_repr:node_column(Keyword)
+        line       = yaml_constr:node_line(Keyword),
+        col        = yaml_constr:node_column(Keyword)
       }];
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected a message to log (string).~n",
       [Line, Col]).

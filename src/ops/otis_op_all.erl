@@ -18,12 +18,12 @@
 create(Ruleset, Keyword, #yaml_seq{entries = Sub_Exprs}) ->
     [#op_all{
         subexprs = otis_conf:create_exprs(Ruleset, Sub_Exprs),
-        line     = yaml_repr:node_line(Keyword),
-        col      = yaml_repr:node_column(Keyword)
+        line     = yaml_constr:node_line(Keyword),
+        col      = yaml_constr:node_column(Keyword)
       }];
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected a sequence of sub-expressions.~n",
       [Line, Col]).

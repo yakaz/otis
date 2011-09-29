@@ -29,22 +29,22 @@ create(Ruleset, Keyword,
         #var{} = Var1 ->
             create2(Ruleset, Keyword, Var1, Value);
         _ ->
-            Line = yaml_repr:node_line(Node),
-            Col  = yaml_repr:node_column(Node),
+            Line = yaml_constr:node_line(Node),
+            Col  = yaml_constr:node_column(Node),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: Left operand must be a variable.~n",
               [Line, Col])
     end;
 create(Ruleset, Keyword,
   #yaml_map{pairs = [{Node, _}]}) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Left operand must be a variable.~n",
       [Line, Col]);
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected a map of the \"variable: value\".~n",
       [Line, Col]).
@@ -61,8 +61,8 @@ create2(Ruleset, Keyword, Var, #yaml_int{value = Value}) ->
     create3(Ruleset, Keyword, Var, Value, int);
 create2(Ruleset, Keyword, _, Node) ->
     %% Unsupported type.
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Type of right operand is unsupported~n", [Line, Col]).
 
@@ -75,8 +75,8 @@ create3(_, Keyword, Var, Value, Type) ->
         var   = Var,
         value = Value,
         type  = Type1,
-        line  = yaml_repr:node_line(Keyword),
-        col   = yaml_repr:node_column(Keyword)
+        line  = yaml_constr:node_line(Keyword),
+        col   = yaml_constr:node_column(Keyword)
       }].
 
 %% -------------------------------------------------------------------

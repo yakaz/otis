@@ -31,7 +31,7 @@ load(File) ->
       file = File
     },
     try
-        YAML = case yaml_repr:file(File, [{simple_structs, false}]) of
+        YAML = case yaml_constr:file(File, [{simple_structs, false}]) of
             [#yaml_doc{} = D | _] -> D;
             []                    -> #yaml_doc{root = #yaml_seq{}}
         end,
@@ -69,8 +69,8 @@ interpret_yaml_doc(
 interpret_yaml_doc(
   #ruleset{yaml = #yaml_doc{root = Node}} = Ruleset) ->
     %% This YAML document doesn't contain a sequence.
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     format_error(Ruleset,
       "~b:~b: Expected a sequence of configuration blocks.~n",
       [Line, Col]).
@@ -97,8 +97,8 @@ interpret_yaml_items(Ruleset, [], Rules) ->
     };
 interpret_yaml_items(Ruleset, [Node | _], _) ->
     %% One sequence item isn't a map.
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     format_error(Ruleset,
       "~b:~b: Expected a map of the form \"attribute: value\".~n",
       [Line, Col]).
@@ -116,8 +116,8 @@ interpret_yaml_item(Ruleset,
 interpret_yaml_item(Ruleset,
   [{#yaml_str{text = "global hooks"} = Node, _} | _]) ->
     %% A "global hooks" attribute must be alone.
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     format_error(Ruleset,
       "~b:~b: The \"global hooks\" attribute must be the only key "
       "of the map.~n",
@@ -128,24 +128,24 @@ interpret_yaml_item(#ruleset{consts = Consts} = Ruleset,
 interpret_yaml_item(Ruleset,
   [{#yaml_str{text = "global consts"} = Node, _} | _]) ->
     %% A "global consts" attribute must be alone.
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     format_error(Ruleset,
       "~b:~b: The \"global consts\" attribute must be the only key "
       "of the map.~n",
       [Line, Col]);
 interpret_yaml_item(Ruleset, [{Node, _} | _]) ->
     %% This item is not recognized, display an error.
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     format_error(Ruleset,
       "~b:~b: Unrecognized configuration block.~n",
       [Line, Col]).
 
 create_rule(Ruleset, Rule, [{Attr, _} | _] = Pairs) ->
     Rule1 = Rule#rule{
-      line = yaml_repr:node_line(Attr),
-      col  = yaml_repr:node_column(Attr)
+      line = yaml_constr:node_line(Attr),
+      col  = yaml_constr:node_column(Attr)
     },
     create_rule2(Ruleset, Rule1, Pairs).
 
@@ -186,21 +186,21 @@ create_rule2(_, Rule, []) ->
     {rule, Rule};
 create_rule2(Ruleset, _, [{Attr, _} | _]) ->
     %% This rule attribute isn't recognized, display an error.
-    Line = yaml_repr:node_line(Attr),
-    Col  = yaml_repr:node_column(Attr),
+    Line = yaml_constr:node_line(Attr),
+    Col  = yaml_constr:node_column(Attr),
     format_error(Ruleset,
       "~b:~b: Unrecognized or malformed rule attribute.~n",
       [Line, Col]).
 
 create_hooks(Ruleset, Keyword, #yaml_map{pairs = Pairs}) ->
     Hooks = #hooks{
-      line = yaml_repr:node_line(Keyword),
-      col  = yaml_repr:node_column(Keyword)
+      line = yaml_constr:node_line(Keyword),
+      col  = yaml_constr:node_column(Keyword)
     },
     create_hooks2(Ruleset, Hooks, Pairs);
 create_hooks(Ruleset, _, Node) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     format_error(Ruleset,
       "~b:~b: Expected a map of the form \"hook: expressions\".~n",
       [Line, Col]).
@@ -237,8 +237,8 @@ create_hooks2(_, Hooks, []) ->
     {hooks, Hooks};
 create_hooks2(Ruleset, _, [{Attr, _} | _]) ->
     %% This hook isn't recognized, display an error.
-    Line = yaml_repr:node_line(Attr),
-    Col  = yaml_repr:node_column(Attr),
+    Line = yaml_constr:node_line(Attr),
+    Col  = yaml_constr:node_column(Attr),
     format_error(Ruleset,
       "~b:~b: Unrecognized or malformed hook.~n",
       [Line, Col]).
@@ -246,8 +246,8 @@ create_hooks2(Ruleset, _, [{Attr, _} | _]) ->
 create_consts(Ruleset, Consts, _, #yaml_map{pairs = Pairs}) ->
     create_consts2(Ruleset, Consts, Pairs);
 create_consts(Ruleset, _, _, Node) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     format_error(Ruleset,
       "~b:~b: Expected a map of the form \"const: value\".~n",
       [Line, Col]).
@@ -264,8 +264,8 @@ create_consts2(#ruleset{consts = Global_Consts} = Ruleset, Consts,
             Consts1  = dict:store(Name, Value2, Consts),
             create_consts2(Ruleset, Consts1, Rest);
         _ ->
-            Line = yaml_repr:node_line(Node),
-            Col  = yaml_repr:node_column(Node),
+            Line = yaml_constr:node_line(Node),
+            Col  = yaml_constr:node_column(Node),
             format_error(Ruleset,
               "~b:~b: Left operand must be a variable.~n",
               [Line, Col])
@@ -273,8 +273,8 @@ create_consts2(#ruleset{consts = Global_Consts} = Ruleset, Consts,
 create_consts2(_, Consts, []) ->
     {consts, Consts};
 create_consts2(Ruleset, _, [{Node, _} |_]) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     format_error(Ruleset,
       "~b:~b: Expected a map of the form \"const: value\".~n",
       [Line, Col]).
@@ -304,8 +304,8 @@ create_exprs2(Ruleset,
             New_Ops = Mod:create(Ruleset, Keyword, Args),
             create_exprs2(Ruleset, Rest, Ops ++ New_Ops);
         {error, Reason} ->
-            Line = yaml_repr:node_line(Node),
-            Col  = yaml_repr:node_column(Node),
+            Line = yaml_constr:node_line(Node),
+            Col  = yaml_constr:node_column(Node),
             format_error(Ruleset,
               "~b:~b: Unsupported keyword '~s' (~s: ~p).~n",
               [Line, Col, Name, Mod, Reason])
@@ -313,8 +313,8 @@ create_exprs2(Ruleset,
 create_exprs2(_, [], Ops) ->
     Ops;
 create_exprs2(Ruleset, [Node | _], _) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     format_error(Ruleset, "~b:~b: Expected a keyword (string).~n",
       [Line, Col]).
 
@@ -326,8 +326,8 @@ format_error(#ruleset{file = File}, Format, Args) ->
     throw(invalid_conf).
 
 format_error(#ruleset{file = File}, Keyword, Format, Args) ->
-    Line = yaml_repr:node_line(Keyword),
-    Col  = yaml_repr:node_column(Keyword),
+    Line = yaml_constr:node_line(Keyword),
+    Col  = yaml_constr:node_column(Keyword),
     ?ERROR(
       "~n"
       "Invalid configuration file '~s':~n" ++

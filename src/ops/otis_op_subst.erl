@@ -24,8 +24,8 @@
 create(Ruleset, Keyword, #yaml_map{pairs = Args}) ->
     create2(Ruleset, Keyword, Args, #op_subst{});
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected a map of the form \"variable: regex\".~n",
       [Line, Col]).
@@ -60,8 +60,8 @@ create2(Ruleset, Keyword,
             },
             create2(Ruleset, Keyword, Rest, Op1);
         _ ->
-            Line = yaml_repr:node_line(Node),
-            Col  = yaml_repr:node_column(Node),
+            Line = yaml_constr:node_line(Node),
+            Col  = yaml_constr:node_column(Node),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: Left operand must be a variable.~n",
               [Line, Col])
@@ -71,8 +71,8 @@ create2(_, Keyword, [],
   when Var /= undefined andalso Regex /= undefined andalso Value /= undefined ->
     Op1 = Op#op_subst{
       match_flags = [{return, list} | Match],
-      line        = yaml_repr:node_line(Keyword),
-      col         = yaml_repr:node_column(Keyword)
+      line        = yaml_constr:node_line(Keyword),
+      col         = yaml_constr:node_column(Keyword)
     },
     [Op1];
 create2(Ruleset, Keyword,
@@ -80,14 +80,14 @@ create2(Ruleset, Keyword,
   #op_subst{value = Value}) ->
     case Value of
         undefined ->
-            Line = yaml_repr:node_line(Attr),
-            Col  = yaml_repr:node_column(Attr),
+            Line = yaml_constr:node_line(Attr),
+            Col  = yaml_constr:node_column(Attr),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: Only one \"value\" attribute allowed.~n",
               [Line, Col]);
         _ ->
-            Line = yaml_repr:node_line(Node),
-            Col  = yaml_repr:node_column(Node),
+            Line = yaml_constr:node_line(Node),
+            Col  = yaml_constr:node_column(Node),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: \"value\" must be a scalar.~n",
               [Line, Col])
@@ -97,14 +97,14 @@ create2(Ruleset, Keyword,
   #op_subst{match_flags = Flags}) ->
     case Flags of
         [] ->
-            Line = yaml_repr:node_line(Attr),
-            Col  = yaml_repr:node_column(Attr),
+            Line = yaml_constr:node_line(Attr),
+            Col  = yaml_constr:node_column(Attr),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: Only one \"flags\" attribute allowed.~n",
               [Line, Col]);
         _ ->
-            Line = yaml_repr:node_line(Node),
-            Col  = yaml_repr:node_column(Node),
+            Line = yaml_constr:node_line(Node),
+            Col  = yaml_constr:node_column(Node),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: \"flags\" must be a string listing the flags.~n",
               [Line, Col])
@@ -113,21 +113,21 @@ create2(Ruleset, Keyword,
   [{#yaml_str{} = Attr, Node} | _], #op_subst{var = Var}) ->
     case Var of
         undefined ->
-            Line = yaml_repr:node_line(Attr),
-            Col  = yaml_repr:node_column(Attr),
+            Line = yaml_constr:node_line(Attr),
+            Col  = yaml_constr:node_column(Attr),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: Only one variable allowed.~n",
               [Line, Col]);
         _ ->
-            Line = yaml_repr:node_line(Node),
-            Col  = yaml_repr:node_column(Node),
+            Line = yaml_constr:node_line(Node),
+            Col  = yaml_constr:node_column(Node),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: The variable must be associated to a regex (string).~n",
               [Line, Col])
     end;
 create2(Ruleset, Keyword, [{Attr, _} | _], _) ->
-    Line = yaml_repr:node_line(Attr),
-    Col  = yaml_repr:node_column(Attr),
+    Line = yaml_constr:node_line(Attr),
+    Col  = yaml_constr:node_column(Attr),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Unsupported attribute.~n", [Line, Col]);
 create2(Ruleset, Keyword, [], _) ->

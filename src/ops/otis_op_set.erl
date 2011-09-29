@@ -18,8 +18,8 @@
 create(Ruleset, Keyword, #yaml_map{pairs = Args}) ->
     create2(Ruleset, Keyword, Args, []);
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected a map of the form \"variable: value\".~n",
       [Line, Col]),
@@ -32,8 +32,8 @@ create2(Ruleset, Keyword,
             Vars1  = lists:keystore(Var1, 1, Vars, {Var1, Value}),
             create2(Ruleset, Keyword, Rest, Vars1);
         _ ->
-            Line = yaml_repr:node_line(Node),
-            Col  = yaml_repr:node_column(Node),
+            Line = yaml_constr:node_line(Node),
+            Col  = yaml_constr:node_column(Node),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: Left operand must be a variable.~n",
               [Line, Col])
@@ -41,8 +41,8 @@ create2(Ruleset, Keyword,
 create2(Ruleset, Keyword, [], Vars) ->
     create3(Ruleset, Keyword, Vars, []);
 create2(Ruleset, Keyword, [Node | _], _) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Left operand must be a variable.~n",
       [Line, Col]).
@@ -60,8 +60,8 @@ create3(Ruleset, Keyword, [{Var, #yaml_int{value = Value}} | Rest], Result) ->
 create3(_, _, [], Result) ->
     lists:reverse(Result);
 create3(Ruleset, Keyword, [{_, Node} | _], _) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Type of right operand is unsupported.~n",
       [Line, Col]).
@@ -75,8 +75,8 @@ create4(_, Keyword, Var, Value, Type) when ?IS_VAR_WRITABLE(Var) ->
       var   = Var,
       value = Value,
       type  = Type1,
-      line  = yaml_repr:node_line(Keyword),
-      col   = yaml_repr:node_column(Keyword)
+      line  = yaml_constr:node_line(Keyword),
+      col   = yaml_constr:node_column(Keyword)
     };
 create4(Ruleset, Keyword, #var{name = Name}, _, _) ->
     otis_conf:format_error(Ruleset, Keyword,

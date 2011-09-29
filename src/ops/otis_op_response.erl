@@ -35,14 +35,14 @@ create(Ruleset, Keyword, #yaml_map{pairs = Pairs}) ->
     %% The user specified one or several attributes.
     create2(Ruleset, Keyword, #op_response{}, Pairs);
 create(Ruleset, Keyword, #yaml_int{} = Node) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: An HTTP code must be greater than zero.~n",
       [Line, Col]);
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected an HTTP code or "
       "a map of the form \"attribute: value\".~n",
@@ -65,14 +65,14 @@ create2(Ruleset, Keyword, Op, []) ->
     create3(Ruleset, Keyword, Op);
 create2(Ruleset, Keyword, _,
   [{#yaml_str{text = "code"}, #yaml_int{} = Node} | _]) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: \"code\" must be a valid HTTP code.~n",
       [Line, Col]);
 create2(Ruleset, Keyword, _, [{Attr, _} | _]) ->
-    Line = yaml_repr:node_line(Attr),
-    Col  = yaml_repr:node_column(Attr),
+    Line = yaml_constr:node_line(Attr),
+    Col  = yaml_constr:node_column(Attr),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Unsupported attribute.~n",
       [Line, Col]).
@@ -84,8 +84,8 @@ create3(Ruleset, Keyword, #op_response{code = Code, reason = undefined} = Op) ->
     create3(Ruleset, Keyword, Op1);
 create3(_, Keyword, Op) ->
     Op1 = Op#op_response{
-      line = yaml_repr:node_line(Keyword),
-      col  = yaml_repr:node_column(Keyword)
+      line = yaml_constr:node_line(Keyword),
+      col  = yaml_constr:node_column(Keyword)
     },
     [Op1].
 

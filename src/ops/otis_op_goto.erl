@@ -19,18 +19,18 @@
 create(_, Keyword, #yaml_int{value = Target}) ->
     [#op_goto{
         target = Target,
-        line   = yaml_repr:node_line(Keyword),
-        col    = yaml_repr:node_column(Keyword)
+        line   = yaml_constr:node_line(Keyword),
+        col    = yaml_constr:node_column(Keyword)
       }];
 create(_, Keyword, #yaml_str{text = Target}) ->
     [#op_goto{
         target = Target,
-        line   = yaml_repr:node_line(Keyword),
-        col    = yaml_repr:node_column(Keyword)
+        line   = yaml_constr:node_line(Keyword),
+        col    = yaml_constr:node_column(Keyword)
       }];
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_repr:node_line(Node),
-    Col  = yaml_repr:node_column(Node),
+    Line = yaml_constr:node_line(Node),
+    Col  = yaml_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected a name or number of a rule or one of the~n"
       "  following keywords: FIRST, PREVIOUS, NEXT, LAST, STOP.~n",
