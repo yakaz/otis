@@ -407,6 +407,18 @@ yakaz.conf
     ),
 
     %% ---------------------------------------------------------------
+    %% ebaypartnernetworkactivation.txt.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /ebaypartnernetworkactivation.php HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/ebaypartnernetworkactivation.txt")
+    ),
+
+    %% ---------------------------------------------------------------
     %% robots.txt.
     %% ---------------------------------------------------------------
 
@@ -551,6 +563,71 @@ yakaz.conf
       otis_reqrw_engine:request(
         "http://www.yakaz.com/unknown-universe/foobar")
     ),
+
+    %% ---------------------------------------------------------------
+    %% Deprecated universe URIs.
+    %% ---------------------------------------------------------------
+
+    {generator,
+      fun() ->
+          [
+            begin
+                Req =
+                  "HTTP/1.1 301 Moved Permanently\r\n"
+                  "Location: http://" ++ Univ ++ ".yakaz." ++ TLD ++"/pathinfo?querystring\r\n"
+                  "\r\n",
+                ?_assertMatch(
+                  Req,
+                  otis_reqrw_engine:request(
+                    "http://www.yakaz." ++ TLD ++ "/" ++ Univ ++ "/pathinfo?querystring")
+                )
+            end
+            || {Univ, TLD} <- [
+              {"auto", "fr"},
+              {"moto", "fr"},
+              {"acheter-vendre", "fr"},
+              {"immobilier", "fr"},
+              {"emploi", "fr"},
+
+              {"property", "co.uk"},
+              {"cars", "co.uk"},
+              {"motorbikes", "co.uk"},
+              {"jobs", "co.uk"},
+              {"for-sale", "co.uk"},
+
+              {"housing", "com"},
+              {"cars", "com"},
+              {"motorcycles", "com"},
+              {"jobs", "com"},
+              {"for-sale", "com"},
+
+              {"inmobiliario", "es"},
+              {"coches", "es"},
+              {"motos", "es"},
+              {"empleo", "es"},
+              {"se-vende", "es"},
+
+              {"immobilien", "de"},
+              {"autos", "de"},
+              {"motorrader", "de"},
+              {"jobs", "de"},
+              {"kaufen-verkaufen", "de"},
+
+              {"immobili", "it"},
+              {"auto", "it"},
+              {"moto", "it"},
+              {"lavoro", "it"},
+              {"in-vendita", "it"},
+
+              {"housing", "com.au"},
+              {"cars", "com.au"},
+              {"motorcyles", "com.au"},
+              {"jobs", "com.au"},
+              {"for-sale", "com.au"}
+            ]
+          ]
+      end
+    },
 
     %% ---------------------------------------------------------------
     %% !*.{php,xml,png,jpg,ico,html,htm,dtd}.
