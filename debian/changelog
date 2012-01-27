@@ -1,3 +1,11 @@
+erlang-otis (1.0.3-2) experimental; urgency=low
+
+  * Rename debian package.
+  * Handle s/yaml_repr/yaml_constr/ renaming
+  * Sync yakaz.conf and update testsuite
+
+ -- Christopher Faulet <christopher@yakaz.com>  Thu, 26 Jan 2012 14:43:07 +0100
+
 otis (1.0.2-1) experimental; urgency=low
 
   * Syslog's facility is now configurable.
