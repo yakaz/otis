@@ -98,23 +98,6 @@ yakaz.conf
     ),
 
     %% ---------------------------------------------------------------
-    %% HTTP bind.
-    %% ---------------------------------------------------------------
-
-    ?_assertMatch(
-      "GET /http-bind HTTP/1.1\r\n"
-      "Host: www.yakaz.com\r\n"
-      "\r\n",
-      otis_reqrw_engine:request("http://www.yakaz.com/http-bind")
-    ),
-    ?_assertMatch(
-      "GET /results.php?checkuniv=http-bind&mod=rewrite&v=txt HTTP/1.1\r\n"
-      "Host: www.yakaz.com\r\n"
-      "\r\n",
-      otis_reqrw_engine:request("http://www.yakaz.com/http-bind/")
-    ),
-
-    %% ---------------------------------------------------------------
     %% Components, sprites and CSS versioning.
     %% ---------------------------------------------------------------
 
@@ -141,6 +124,18 @@ yakaz.conf
       "Host: www.yakaz.com\r\n"
       "\r\n",
       otis_reqrw_engine:request("http://www.yakaz.com/css/main.3.css")
+    ),
+    ?_assertMatch(
+      "GET /component/fr/chat.js HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/component/fr/chat.js")
+    ),
+    ?_assertMatch(
+      "GET /component/fr/chat.js HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/component/fr/chat.3.js")
     ),
 
     %% ---------------------------------------------------------------
@@ -201,15 +196,22 @@ yakaz.conf
     ),
 
     %% ---------------------------------------------------------------
-    %% Components.
+    %% Places.
     %% ---------------------------------------------------------------
 
     ?_assertMatch(
-      "GET /component/chat/roster.js HTTP/1.1\r\n"
+      "HTTP/1.1 302 Moved Temporarily\r\n"
+      "Location: http://www.yakaz.com/\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/places/")
+    ),
+    ?_assertMatch(
+      "GET /results.php?pid=foobar&mod=rewrite&lo=7 HTTP/1.1\r\n"
       "Host: www.yakaz.com\r\n"
       "\r\n",
       otis_reqrw_engine:request(
-        "http://www.yakaz.com/component/chat/roster.4.js")
+        "http://www.yakaz.com/places/foobar")
     ),
 
     %% ---------------------------------------------------------------
@@ -259,6 +261,23 @@ yakaz.conf
           ]
       end
     },
+
+    %% ---------------------------------------------------------------
+    %% HTTP bind.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /http-bind HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/http-bind")
+    ),
+    ?_assertMatch(
+      "GET /results.php?checkuniv=http-bind&mod=rewrite&v=txt HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/http-bind/")
+    ),
 
     %% ---------------------------------------------------------------
     %% Directories.
