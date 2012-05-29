@@ -240,12 +240,8 @@ rebuild_path2(#state{fragment = Fragment} = State, Path) ->
 %% -------------------------------------------------------------------
 
 split_query(Path) ->
-    case parse_path(Path, "", "", 0) of
-        {_, _, _, Path1, Query} ->
-            {Path1, Query};
-        _ ->
-            undefined
-    end.
+    {_, _, _, Path1, Query} = parse_path(Path, "", "", 0),
+    {Path1, Query}.
 
 parse_query(#state{query_parsed = true} = State) ->
     State;
