@@ -5,12 +5,12 @@
 %% Initialization.
 -export([
     start_link/0
-  ]).     
+  ]).
 
 %% supervisor(3erl) callbacks.
--export([   
-    init/1      
-  ]).           
+-export([
+    init/1
+  ]).
 
 %% -------------------------------------------------------------------
 %% Initialization.
