@@ -23,6 +23,8 @@
     get_header/3,
     get_rheader/2,
     get_rheader/3,
+    get_cookie/2,
+    get_cookie/3,
     set/3,
     set/4,
     set_uservar/3,
@@ -33,6 +35,8 @@
     set_header/4,
     set_rheader/3,
     set_rheader/4,
+    set_cookie/3,
+    set_cookie/4,
     run_filters/3,
     run_filters/4
   ]).
@@ -482,11 +486,11 @@ get2(#state{vars = Vars} = State,
 get2(State, #var{name = [C | _] = Name} = Var, Type_Mod)
   when not is_integer(C) ->
     %% The variable name is a variable itself: expand it.
-    Name1 = expand(State, Name),
+    {State1, Name1} = expand(State, Name),
     Var1  = Var#var{
       name = Name1
     },
-    get2(State, Var1, Type_Mod);
+    get2(State1, Var1, Type_Mod);
 get2(State, #var{prefix = undefined, name = Name}, Type_Mod) ->
     get_uservar(State, Name, Type_Mod);
 get2(State, #var{prefix = "query", name = Name}, Type_Mod) ->
@@ -494,7 +498,9 @@ get2(State, #var{prefix = "query", name = Name}, Type_Mod) ->
 get2(State, #var{prefix = "header", name = Name}, Type_Mod) ->
     get_header(State, Name, Type_Mod);
 get2(State, #var{prefix = "rheader", name = Name}, Type_Mod) ->
-    get_rheader(State, Name, Type_Mod).
+    get_rheader(State, Name, Type_Mod);
+get2(State, #var{prefix = "cookie", name = Name}, Type_Mod) ->
+    get_cookie(State, Name, Type_Mod).
 
 get_uservar(State, Name) ->
     get_uservar(State, Name, undefined).
@@ -502,8 +508,8 @@ get_uservar(State, Name) ->
 get_uservar(State, [C | _] = Name, Type_Mod)
   when not is_integer(C) ->
     %% The variable name is a variable itself: expand it.
-    Name1 = expand(State, Name),
-    get_uservar(State, Name1, Type_Mod);
+    {State1, Name1} = expand(State, Name),
+    get_uservar(State1, Name1, Type_Mod);
 get_uservar(#state{vars = Vars} = State, Name, undefined) ->
     try
         case dict:fetch(Name, Vars) of
@@ -556,13 +562,13 @@ get_query(State, Name) ->
 get_query(State, [C | _] = Name, Type_Mod)
   when not is_integer(C) ->
     %% The variable name is a variable itself: expand it.
-    Name1 = expand(State, Name),
-    get_query(State, Name1, Type_Mod);
+    {State1, Name1} = expand(State, Name),
+    get_query(State1, Name1, Type_Mod);
 get_query(#state{query_parsed = false} = State, Name, Type_Mod) ->
     State1 = otis_utils:parse_query(State),
     get_query(State1, Name, Type_Mod);
 get_query(#state{query_str = Query} = State, Name, Type_Mod) ->
-    case get_loop(Name, Type_Mod, Query, [], false) of
+    case get_loop(Name, Type_Mod, Query, [], undefined, false) of
         {Value, Query1} ->
             State1 = State#state{
               query_str = Query1
@@ -578,11 +584,24 @@ get_header(State, Name) ->
 get_header(State, [C | _] = Name, Type_Mod)
   when not is_integer(C) ->
     %% The variable name is a variable itself: expand it.
-    Name1 = expand(State, Name),
-    get_header(State, Name1, Type_Mod);
-get_header(#state{headers = Headers} = State, Name, Type_Mod) ->
+    {State1, Name1} = expand(State, Name),
+    get_header(State1, Name1, Type_Mod);
+get_header(State, Name, Type_Mod) ->
     Name1 = string:to_lower(Name),
-    case get_loop(Name1, Type_Mod, Headers, [], false) of
+    get_header_lc(State, Name1, Type_Mod).
+
+get_header_lc(#state{cookies = Cookies} = State, "cookie", Type_Mod)
+  when Cookies /= undefined ->
+    Value_S = otis_utils:format_cookie_header(Cookies),
+    case Type_Mod of
+        undefined ->
+            {State, Value_S};
+        _ ->
+            Value_C = Type_Mod:from_string(Value_S),
+            {State, Value_C}
+    end;
+get_header_lc(#state{headers = Headers} = State, Name, Type_Mod) ->
+    case get_loop(Name, Type_Mod, Headers, [], undefined, false) of
         {Value, Headers1} ->
             State1 = State#state{
               headers = Headers1
@@ -598,11 +617,14 @@ get_rheader(State, Name) ->
 get_rheader(State, [C | _] = Name, Type_Mod)
   when not is_integer(C) ->
     %% The variable name is a variable itself: expand it.
-    Name1 = expand(State, Name),
-    get_rheader(State, Name1, Type_Mod);
-get_rheader(#state{rheaders = Headers} = State, Name, Type_Mod) ->
+    {State1, Name1} = expand(State, Name),
+    get_rheader(State1, Name1, Type_Mod);
+get_rheader(State, Name, Type_Mod) ->
     Name1 = string:to_lower(Name),
-    case get_loop(Name1, Type_Mod, Headers, [], false) of
+    get_rheader_lc(State, Name1, Type_Mod).
+
+get_rheader_lc(#state{rheaders = Headers} = State, Name, Type_Mod) ->
+    case get_loop(Name, Type_Mod, Headers, [], undefined, false) of
         {Value, Headers1} ->
             State1 = State#state{
               rheaders = Headers1
@@ -612,29 +634,107 @@ get_rheader(#state{rheaders = Headers} = State, Name, Type_Mod) ->
             {State, Value}
     end.
 
+get_cookie(State, Name) ->
+    get_cookie(State, Name, undefined).
+
+get_cookie(State, [C | _] = Name, Type_Mod)
+  when not is_integer(C) ->
+    %% The variable name is a variable itself: expand it.
+    {State1, Name1} = expand(State, Name),
+    get_header(State1, Name1, Type_Mod);
+get_cookie(#state{cookies = undefined} = State, Name, Type_Mod) ->
+    %% Cookies are not parsed yet: get the "Cookie" headers and parse
+    %% their value.
+    State1 = parse_cookies(State),
+    get_cookie(State1, Name, Type_Mod);
+get_cookie(#state{cookies = Cookies} = State, Name, Type_Mod) ->
+    case get_loop(Name, Type_Mod, Cookies, [], undefined, false) of
+        {Value, Cookies1} ->
+            State1 = State#state{
+              cookies = Cookies1
+            },
+            {State1, Value};
+        Value ->
+            {State, Value}
+    end.
+
+parse_cookies(#state{headers = Headers} = State) ->
+    Ret = get_loop("cookie", undefined, Headers, [], [], remove),
+    {Cookie_Hds1, Headers2} = case Ret of
+        {Cookie_Hds, Headers1} -> {Cookie_Hds, Headers1};
+        Cookie_Hds             -> {Cookie_Hds, Headers}
+    end,
+    Cookies  = parse_cookie_hds(Cookie_Hds1),
+    State#state{
+      headers = Headers2,
+      cookies = Cookies
+    }.
+
+parse_cookie_hds(Cookie_Hds) ->
+    parse_cookie_hds2(Cookie_Hds, []).
+
+parse_cookie_hds2([Cookie_Hd | Rest], All_Cookies) ->
+    Cookies = otis_utils:parse_cookie_header(Cookie_Hd),
+    parse_cookie_hds2(Rest, All_Cookies ++ Cookies);
+parse_cookie_hds2([], All_Cookies) ->
+    All_Cookies.
+
 get_loop(Name, undefined,
-  [{Name, Value, _, _} | _] = List_Tail,
-  List_Head, Converted) when Value /= undefined ->
+  [{Name, Value, _, _} = Item | Rest] = List_Tail,
+  List_Head, Values, Converted) when Value /= undefined ->
     %% Item's value is already a string and that's what the caller
     %% requested.
-    get_loop2(Value, List_Head, List_Tail, Converted);
+    case Values of
+        undefined when Converted == remove ->
+            get_loop2(Value, List_Head, List_Tail, Converted);
+        undefined ->
+            get_loop2(Value, List_Head, Rest, Converted);
+        _ when Converted == remove ->
+            get_loop(Name, undefined, Rest, List_Head,
+              [Value | Values], Converted);
+        _ ->
+            get_loop(Name, undefined, Rest, [Item | List_Head],
+              [Value | Values], Converted)
+    end;
 get_loop(Name, undefined,
   [{Name, undefined, Type_Mod, Value_C} | List_Tail],
-  List_Head, _) ->
+  List_Head, Values, Converted) ->
     %% Item's value must be converted first before we can return its
     %% value.
     Value_S = Type_Mod:to_string(Value_C),
     Item1   = {Name, Value_S, Type_Mod, Value_C},
-    get_loop2(Value_S, [Item1 | List_Head], List_Tail, true);
+    case Values of
+        undefined when Converted == remove ->
+            get_loop2(Value_S, List_Head, List_Tail, Converted);
+        undefined ->
+            get_loop2(Value_S, [Item1 | List_Head], List_Tail, true);
+        _ when Converted == remove ->
+            get_loop(Name, undefined, List_Tail, List_Head,
+              [Value_S | Values], Converted);
+        _ ->
+            get_loop(Name, undefined, List_Tail, [Item1 | List_Head],
+              [Value_S | Values], true)
+    end;
 get_loop(Name, Type_Mod,
-  [{Name, _, Type_Mod, Value_C} | _] = List_Tail,
-  List_Head, Converted) when Type_Mod /= undefined ->
+  [{Name, _, Type_Mod, Value_C} = Item | Rest] = List_Tail,
+  List_Head, Values, Converted) when Type_Mod /= undefined ->
     %% Item's value is compatible with Type_Mod, we can return it
     %% without conversion.
-    get_loop2(Value_C, List_Head, List_Tail, Converted);
+    case Values of
+        undefined when Converted == remove ->
+            get_loop2(Value_C, List_Head, List_Tail, Converted);
+        undefined ->
+            get_loop2(Value_C, List_Head, List_Tail, Converted);
+        _ when Converted == remove ->
+            get_loop(Name, Type_Mod, Rest, List_Head,
+              [Value_C | Values], Converted);
+        _ ->
+            get_loop(Name, Type_Mod, Rest, [Item | List_Head],
+              [Value_C | Values], Converted)
+    end;
 get_loop(Name, Type_Mod,
   [{Name, Value_S0, Other_Type_Mod, Value_C0} = Item | List_Tail],
-  List_Head, Converted) when Type_Mod /= undefined ->
+  List_Head, Values, Converted) when Type_Mod /= undefined ->
     %% Item's value must be converted first before we can return its
     %% value.
     Value_S = case Value_S0 of
@@ -644,23 +744,46 @@ get_loop(Name, Type_Mod,
     try
         Value_C = Type_Mod:from_string(Value_S),
         Item1   = {Name, Value_S, Type_Mod, Value_C},
-        get_loop2(Value_C, [Item1 | List_Head], List_Tail, true)
+        case Values of
+            undefined when Converted == remove ->
+                get_loop2(Value_C, List_Head, List_Tail, Converted);
+            undefined ->
+                get_loop2(Value_C, [Item1 | List_Head], List_Tail, true);
+            _ when Converted == remove ->
+                get_loop(Name, Type_Mod, List_Tail, List_Head,
+                  [Value_C | Values], Converted);
+            _ ->
+                get_loop(Name, Type_Mod, List_Tail, [Item1 | List_Head],
+                  [Value_C | Values], true)
+        end
     catch
         throw:conversion_failed ->
             %% Item's value can't be converted. Return "undefined".
-            get_loop2(undefined, [Item | List_Head], List_Tail,
-              Converted)
+            case Values of
+                undefined when Converted == remove ->
+                    get_loop2(undefined, List_Head, List_Tail,
+                      Converted);
+                undefined ->
+                    get_loop2(undefined, [Item | List_Head], List_Tail,
+                      Converted);
+                _ when Converted == remove ->
+                    get_loop(Name, Type_Mod, List_Tail, List_Head,
+                      Values, Converted);
+                _ ->
+                    get_loop(Name, Type_Mod, List_Tail, [Item | List_Head],
+                      Values, Converted)
+            end
     end;
 get_loop(Name, Type_Mod, [Item | List_Tail], List_Head,
-  Converted) ->
+  Values, Converted) ->
     get_loop(Name, Type_Mod, List_Tail, [Item | List_Head],
-      Converted);
-get_loop(_, _, [], Query, Converted) ->
-    get_loop2(undefined, Query, [], Converted).
+      Values, Converted);
+get_loop(_, _, [], Query, Values, Converted) ->
+    get_loop2(Values, Query, [], Converted).
 
 get_loop2(Value, _, _, false) ->
     Value;
-get_loop2(Value, List_Head, List_Tail, true) ->
+get_loop2(Value, List_Head, List_Tail, _) ->
     List1 = lists:reverse(List_Head) ++ List_Tail,
     {Value, List1}.
 
@@ -716,11 +839,11 @@ set(State, #var{name = Name} = Var, _, _) when not ?IS_VAR_WRITABLE(Var) ->
 set(State, #var{name = [C | _] = Name} = Var, Value, Type_Mod)
   when not is_integer(C) ->
     %% The variable name is a variable itself: expand it.
-    Name1 = expand(State, Name),
+    {State1, Name1} = expand(State, Name),
     Var1  = Var#var{
       name = Name1
     },
-    set(State, Var1, Value, Type_Mod);
+    set(State1, Var1, Value, Type_Mod);
 set(State, #var{prefix = undefined, name = Name}, Value, Type_Mod) ->
     set_uservar(State, Name, Value, Type_Mod);
 set(State, #var{prefix = "query", name = Name}, Value, Type_Mod) ->
@@ -728,7 +851,9 @@ set(State, #var{prefix = "query", name = Name}, Value, Type_Mod) ->
 set(State, #var{prefix = "header", name = Name}, Value, Type_Mod) ->
     set_header(State, Name, Value, Type_Mod);
 set(State, #var{prefix = "rheader", name = Name}, Value, Type_Mod) ->
-    set_rheader(State, Name, Value, Type_Mod).
+    set_rheader(State, Name, Value, Type_Mod);
+set(State, #var{prefix = "cookie", name = Name}, Value, Type_Mod) ->
+    set_cookie(State, Name, Value, Type_Mod).
 
 set_uservar(State, Name, Value) ->
     set_uservar(State, Name, Value, undefined).
@@ -736,8 +861,8 @@ set_uservar(State, Name, Value) ->
 set_uservar(State, [C | _] = Name, Value, Type_Mod)
   when not is_integer(C) ->
     %% The variable name is a variable itself: expand it.
-    Name1 = expand(State, Name),
-    set_uservar(State, Name1, Value, Type_Mod);
+    {State1, Name1} = expand(State, Name),
+    set_uservar(State1, Name1, Value, Type_Mod);
 set_uservar(#state{vars = Vars} = State, Name, "", undefined) ->
     Vars1 = dict:erase(Name, Vars),
     State#state{
@@ -760,8 +885,8 @@ set_query(State, Name, Value) ->
 set_query(State, [C | _] = Name, Value, Type_Mod)
   when not is_integer(C) ->
     %% The variable name is a variable itself: expand it.
-    Name1 = expand(State, Name),
-    set_query(State, Name1, Value, Type_Mod);
+    {State1, Name1} = expand(State, Name),
+    set_query(State1, Name1, Value, Type_Mod);
 set_query(#state{query_parsed = false} = State, Name, Value, Type_Mod) ->
     State1 = otis_utils:parse_query(State),
     set_query(State1, Name, Value, Type_Mod);
@@ -789,8 +914,8 @@ set_header(State, Name, Value) ->
 set_header(State, [C | _] = Name, Value, Type_Mod)
   when not is_integer(C) ->
     %% The variable name is a variable itself: expand it.
-    Name1 = expand(State, Name),
-    set_header(State, Name1, Value, Type_Mod);
+    {State1, Name1} = expand(State, Name),
+    set_header(State1, Name1, Value, Type_Mod);
 set_header(#state{headers = Headers} = State, Name, Value, undefined) ->
     Name1 = string:to_lower(Name),
     Headers1 = case Value of
@@ -800,16 +925,32 @@ set_header(#state{headers = Headers} = State, Name, Value, undefined) ->
             Param = {Name1, Value, undefined, undefined},
             set_loop(Name1, Param, Headers)
     end,
-    State#state{
-      headers = Headers1
-    };
+    case Name1 of
+        "cookie" ->
+            State#state{
+              headers = Headers1,
+              cookies = undefined
+            };
+        _ ->
+            State#state{
+              headers = Headers1
+            }
+    end;
 set_header(#state{headers = Headers} = State, Name, Value, Type_Mod) ->
     Name1 = string:to_lower(Name),
     Param = {Name1, undefined, Type_Mod, Value},
     Headers1 = set_loop(Name1, Param, Headers),
-    State#state{
-      headers = Headers1
-    }.
+    case Name1 of
+        "cookie" ->
+            State#state{
+              headers = Headers1,
+              cookies = undefined
+            };
+        _ ->
+            State#state{
+              headers = Headers1
+            }
+    end.
 
 set_rheader(State, Name, Value) ->
     set_rheader(State, Name, Value, undefined).
@@ -817,8 +958,8 @@ set_rheader(State, Name, Value) ->
 set_rheader(State, [C | _] = Name, Value, Type_Mod)
   when not is_integer(C) ->
     %% The variable name is a variable itself: expand it.
-    Name1 = expand(State, Name),
-    set_rheader(State, Name1, Value, Type_Mod);
+    {State1, Name1} = expand(State, Name),
+    set_rheader(State1, Name1, Value, Type_Mod);
 set_rheader(#state{rheaders = Headers} = State, Name, Value, undefined) ->
     Name1 = string:to_lower(Name),
     Headers1 = case Value of
@@ -837,6 +978,37 @@ set_rheader(#state{rheaders = Headers} = State, Name, Value, Type_Mod) ->
     Headers1 = set_loop(Name1, Param, Headers),
     State#state{
       rheaders = Headers1
+    }.
+
+set_cookie(State, Name, Value) ->
+    set_cookie(State, Name, Value, undefined).
+
+set_cookie(State, [C | _] = Name, Value, Type_Mod)
+  when not is_integer(C) ->
+    %% The variable name is a variable itself: expand it.
+    {State1, Name1} = expand(State, Name),
+    set_cookie(State1, Name1, Value, Type_Mod);
+set_cookie(#state{cookies = undefined} = State, Name, Value, Type_Mod) ->
+    %% Cookies are not parsed yet: get the "Cookie" headers and parse
+    %% their value.
+    State1 = parse_cookies(State),
+    set_cookie(State1, Name, Value, Type_Mod);
+set_cookie(#state{cookies = Cookies} = State, Name, Value, undefined) ->
+    Cookies1 = case Value of
+        "" ->
+            unset_loop(Name, Cookies);
+        _ ->
+            Param = {Name, Value, undefined, undefined},
+            set_loop(Name, Param, Cookies)
+    end,
+    State#state{
+      cookies = Cookies1
+    };
+set_cookie(#state{cookies = Cookies} = State, Name, Value, Type_Mod) ->
+    Param = {Name, undefined, Type_Mod, Value},
+    Cookies1 = set_loop(Name, Param, Cookies),
+    State#state{
+      cookies = Cookies1
     }.
 
 set_loop(Name, New_Item, List) ->

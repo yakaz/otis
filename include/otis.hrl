@@ -18,6 +18,7 @@
     query_str    = "",
     fragment     = "",
     headers      = [],
+    cookies      = undefined,
     query_parsed = false,
 
     %% Response (filled in case of a response or redirect).

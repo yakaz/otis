@@ -21,6 +21,8 @@
     format_query/1,
     format_headers/1,
     capitalize_header/1,
+    parse_cookie_header/1,
+    format_cookie_header/1,
     response_content/1,
     response_content/2
   ]).
@@ -327,6 +329,61 @@ capitalize_header2([C | Rest], Result) ->
     capitalize_header2(Rest, [C | Result]);
 capitalize_header2([], Result) ->
     lists:reverse(Result).
+
+%% -------------------------------------------------------------------
+%% Cookie handling.
+%% -------------------------------------------------------------------
+
+parse_cookie_header(String) ->
+    parse_cookie_header2(String, "", undefined, []).
+
+parse_cookie_header2([$\s | Rest], "", undefined, Result) ->
+    parse_cookie_header2(Rest, "", undefined, Result);
+parse_cookie_header2([$= | Rest], Name, undefined, Result) ->
+    parse_cookie_header2(Rest, Name, "", Result);
+parse_cookie_header2([$; | Rest], Name, Value, Result) ->
+    Result1 = store_cookie(Result, Name, Value),
+    parse_cookie_header2(Rest, "", undefined, Result1);
+parse_cookie_header2([C | Rest], Name, undefined, Result) ->
+    parse_cookie_header2(Rest, [C | Name], undefined, Result);
+parse_cookie_header2([C | Rest], Name, Value, Result) ->
+    parse_cookie_header2(Rest, Name, [C | Value], Result);
+parse_cookie_header2([], Name, Value, Result) ->
+    Result1 = store_cookie(Result, Name, Value),
+    lists:reverse(Result1).
+
+store_cookie(Result, Name, Value) ->
+    Name1 = unescape_uri(lists:reverse(Name)),
+    Value1 = unescape_uri(lists:reverse(Value)),
+    [{Name1, Value1, undefined, undefined} | Result].
+
+format_cookie_header(Cookies) ->
+    format_cookie_header2(Cookies, undefined).
+
+format_cookie_header2([{Name, Value, _, _} | Rest], Result)
+  when Value /= undefined ->
+    Cookie  = format_cookie(Name, Value),
+    Result1 = case Result of
+        undefined -> Cookie;
+        _         -> Result ++ "; " ++ Cookie
+    end,
+    format_cookie_header2(Rest, Result1);
+format_cookie_header2([{Name, undefined, Type_Mod, Value_C} | Rest],
+  Result) ->
+    Value_S = Type_Mod:to_string(Value_C),
+    Cookie  = format_cookie(Name, Value_S),
+    Result1 = case Result of
+        undefined -> Cookie;
+        _         -> Result ++ "; " ++ Cookie
+    end,
+    format_cookie_header2(Rest, Result1);
+format_cookie_header2([], Result) ->
+    Result.
+
+format_cookie(Name, Value) ->
+    Name1  = escape_uri(Name),
+    Value1 = escape_uri(Value),
+    Name1 ++ "=" ++ Value1.
 
 %% -------------------------------------------------------------------
 %% HTTP errors.
