@@ -163,25 +163,6 @@ yakaz.conf
     ),
 
     %% ---------------------------------------------------------------
-    %% /img2-2/.
-    %% ---------------------------------------------------------------
-
-    ?_assertMatch(
-      "HTTP/1.1 301 Moved Permanently\r\n"
-      "Location: http://media.yakaz.com/imgv2-2/miscellaneous/2011/06/11-22.jpg\r\n"
-      "\r\n",
-      otis_reqrw_engine:request(
-        "http://www.yakaz.com/imgv2-2/2011/06/11-22.jpg")
-    ),
-    ?_assertMatch(
-      "HTTP/1.1 301 Moved Permanently\r\n"
-      "Location: http://media.yakaz.com/imgv2-2/miscellaneous/2011/06/big-11-22.jpg\r\n"
-      "\r\n",
-      otis_reqrw_engine:request(
-        "http://www.yakaz.com/imgv2-2/2011/06/big-11-22.jpg")
-    ),
-
-    %% ---------------------------------------------------------------
     %% Neighbor profile.
     %% ---------------------------------------------------------------
 
