@@ -16,7 +16,9 @@
     query_param/3,
     query_param/4,
     header/3,
-    header/4
+    header/4,
+    cookie/3,
+    cookie/4
   ]).
 
 %% -------------------------------------------------------------------
@@ -177,6 +179,28 @@ header(#state{headers = Headers} = State, Name, Value, Type_Mod) ->
         {R, Headers1} ->
             S1 = State#state{
               headers = Headers1
+            },
+            {R, S1};
+        R ->
+            {R, State}
+    end,
+    case Result of
+        match   -> State1;
+        nomatch -> otis_utils:abort(State1)
+    end.
+
+cookie(State, Name, Value) ->
+    cookie(State, Name, Value, undefined).
+
+cookie(#state{cookies = undefined} = State, Name, Value, Type_Mod) ->
+    State1 = otis_utils:parse_cookies(State),
+    cookie(State1, Name, Value, Type_Mod);
+cookie(#state{cookies = Cookies} = State, Name, Value, Type_Mod) ->
+    Ret = loop(Name, Value, Type_Mod, Cookies, [], false),
+    {Result, State1} = case Ret of
+        {R, Cookies1} ->
+            S1 = State#state{
+              cookies = Cookies1
             },
             {R, S1};
         R ->

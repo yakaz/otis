@@ -14,7 +14,8 @@
 %% Used by templates.
 -export([
     query_param/5,
-    header/5
+    header/5,
+    cookie/5
   ]).
 
 %% -------------------------------------------------------------------
@@ -238,6 +239,17 @@ header(#state{headers = Headers} = State, Name, Regex, Flags,
     Headers1 = loop(Name1, Regex, Flags, Value, Headers, []),
     State#state{
       headers = Headers1
+    }.
+
+cookie(#state{cookies = undefined} = State, Name, Regex, Flags,
+  Value) ->
+    State1 = otis_utils:parse_cookies(State),
+    cookie(State1, Name, Regex, Flags, Value);
+cookie(#state{cookies = Cookies} = State, Name, Regex, Flags,
+  Value) ->
+    Cookies1 = loop(Name, Regex, Flags, Value, Cookies, []),
+    State#state{
+      query_str = Cookies1
     }.
 
 loop(Name, Regex, Flags, Value,

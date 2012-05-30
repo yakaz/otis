@@ -16,7 +16,8 @@
 -export([
     handle_captures/3,
     query_param/5,
-    header/5
+    header/5,
+    cookie/5
   ]).
 
 %% -------------------------------------------------------------------
@@ -310,6 +311,24 @@ header(#state{headers = Headers} = State, Name, Regex, Flags,
         {match, Captured, Headers1} ->
             State1 = State#state{
               headers = Headers1
+            },
+            handle_captures(State1, Captures, Captured)
+    end.
+
+cookie(#state{cookies = undefined} = State, Name, Regex, Flags,
+  Captures) ->
+    State1 = otis_utils:parse_cookies(State),
+    cookie(State1, Name, Regex, Flags, Captures);
+cookie(#state{cookies = Cookies} = State, Name, Regex, Flags,
+  Captures) ->
+    case loop(Name, Regex, Flags, Cookies, [], false) of
+        nomatch ->
+            otis_utils:abort(State);
+        {match, Captured} ->
+            handle_captures(State, Captures, Captured);
+        {match, Captured, Cookies1} ->
+            State1 = State#state{
+              cookies = Cookies1
             },
             handle_captures(State1, Captures, Captured)
     end.
