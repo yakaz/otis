@@ -105,13 +105,14 @@ gen_code(#code{cursor = Cursor, ruleset = Ruleset} = Code,
     Text = otis_tpl:expand(Tpl, Tpl_Vars),
     {Expr_Fun, [Text]}.
 
-get_tpl_name(#op_eq{var = #var{prefix = Prefix} = Var})
-  when Prefix == "query" orelse Prefix == "header" ->
-    string:join(["eq", otis_var:domain(Var)], "_") ++ ".erl";
-get_tpl_name(#op_eq{var = Var, type = Type}) ->
+get_tpl_name(#op_eq{var = #var{prefix = Prefix} = Var, type = Type}) ->
     case otis_var:domain(Var) of
-        "user" -> "eq_user.erl";
-        Domain -> string:join(["eq", Domain, atom_to_list(Type)], "_") ++ ".erl"
+        "user" ->
+            "eq_user.erl";
+        Prefix ->
+            "eq_" ++ Prefix ++ ".erl";
+        Domain ->
+            string:join(["eq", Domain, atom_to_list(Type)], "_") ++ ".erl"
     end.
 
 get_tpl_vars(Code,
@@ -129,8 +130,7 @@ get_tpl_vars(Code,
       | Vars
     ];
 get_tpl_vars(Code,
-  #op_eq{var = #var{prefix = Prefix, name = Name}, value = Value, type = Type},
-  Vars) when Prefix == "query" orelse Prefix == "header" ->
+  #op_eq{var = #var{name = Name}, value = Value, type = Type}, Vars) ->
     Name1    = otis_var:expand_consts(Code, Name),
     Value1   = otis_var:expand_consts(Code, Value),
     Type_Mod = otis_utils:type_mod(Type),

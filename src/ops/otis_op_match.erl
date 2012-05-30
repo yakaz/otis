@@ -220,8 +220,7 @@ get_tpl_vars(Code,
         | Vars
       ]);
 get_tpl_vars(Code,
-  #op_match{var = #var{prefix = Prefix, name = Name}} = Expr, Vars)
-  when Prefix == "query" orelse Prefix == "header" ->
+  #op_match{var = #var{name = Name}} = Expr, Vars) ->
     Name1 = otis_var:expand_consts(Code, Name),
     get_tpl_vars2(Code, Expr, [
         {"NAME", io_lib:format("~p", [Name1])}
