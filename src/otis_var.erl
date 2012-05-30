@@ -25,6 +25,7 @@
     get_rheader/3,
     get_cookie/2,
     get_cookie/3,
+    headers_to_cookies/1,
     set/3,
     set/4,
     set_uservar/3,
@@ -645,7 +646,7 @@ get_cookie(State, [C | _] = Name, Type_Mod)
 get_cookie(#state{cookies = undefined} = State, Name, Type_Mod) ->
     %% Cookies are not parsed yet: get the "Cookie" headers and parse
     %% their value.
-    State1 = parse_cookies(State),
+    State1 = headers_to_cookies(State),
     get_cookie(State1, Name, Type_Mod);
 get_cookie(#state{cookies = Cookies} = State, Name, Type_Mod) ->
     case get_loop(Name, Type_Mod, Cookies, [], undefined, false) of
@@ -658,25 +659,36 @@ get_cookie(#state{cookies = Cookies} = State, Name, Type_Mod) ->
             {State, Value}
     end.
 
-parse_cookies(#state{headers = Headers} = State) ->
+headers_to_cookies(#state{headers = Headers} = State) ->
     Ret = get_loop("cookie", undefined, Headers, [], [], remove),
     {Cookie_Hds1, Headers2} = case Ret of
         {Cookie_Hds, Headers1} -> {Cookie_Hds, Headers1};
         Cookie_Hds             -> {Cookie_Hds, Headers}
     end,
-    Cookies  = parse_cookie_hds(Cookie_Hds1),
+    Cookies = parse_cookie_hds(Cookie_Hds1, []),
     State#state{
       headers = Headers2,
       cookies = Cookies
     }.
 
-parse_cookie_hds(Cookie_Hds) ->
-    parse_cookie_hds2(Cookie_Hds, []).
+cookies_to_headers(#state{cookies = undefined} = State) ->
+    State;
+cookies_to_headers(#state{cookies = []} = State) ->
+    State#state{
+      cookies = undefined
+    };
+cookies_to_headers(#state{cookies = Cookies, headers = Headers} = State) ->
+    Cookie_Hd = otis_utils:format_cookie_header(Cookies),
+    Headers1 = Headers ++ [{"cookie", Cookie_Hd, undefined, undefined}],
+    State#state{
+      headers = Headers1,
+      cookies = undefined
+    }.
 
-parse_cookie_hds2([Cookie_Hd | Rest], All_Cookies) ->
+parse_cookie_hds([Cookie_Hd | Rest], All_Cookies) ->
     Cookies = otis_utils:parse_cookie_header(Cookie_Hd),
-    parse_cookie_hds2(Rest, All_Cookies ++ Cookies);
-parse_cookie_hds2([], All_Cookies) ->
+    parse_cookie_hds(Rest, All_Cookies ++ Cookies);
+parse_cookie_hds([], All_Cookies) ->
     All_Cookies.
 
 get_loop(Name, undefined,
@@ -991,7 +1003,7 @@ set_cookie(State, [C | _] = Name, Value, Type_Mod)
 set_cookie(#state{cookies = undefined} = State, Name, Value, Type_Mod) ->
     %% Cookies are not parsed yet: get the "Cookie" headers and parse
     %% their value.
-    State1 = parse_cookies(State),
+    State1 = headers_to_cookies(State),
     set_cookie(State1, Name, Value, Type_Mod);
 set_cookie(#state{cookies = Cookies} = State, Name, Value, undefined) ->
     Cookies1 = case Value of
