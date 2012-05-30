@@ -22,6 +22,41 @@
       otis_var:get(
         otis_var:set(#state{}, otis_var:parse("$(PATH)"), "/path"),
         otis_var:parse("$(PATH)"))
+    ),
+    ?_assertMatch(
+      {_, "good"},
+      otis_var:get(
+        otis_var:set(#state{}, otis_var:parse("$(QUERY)"),
+          "param1=bad&param2=good"),
+        otis_var:parse("$(query:param2)"))
+    ),
+    ?_assertMatch(
+      {_, "param=value%26value"},
+      otis_var:get(
+        otis_var:set(#state{}, otis_var:parse("$(query:param)"),
+          "value&value"),
+        otis_var:parse("$(QUERY)"))
+    ),
+    ?_assertMatch(
+      {_, "cookie1=bad;cookie2=good"},
+      otis_var:get(
+        otis_var:set(#state{}, otis_var:parse("$(header:cookie)"),
+          "cookie1=bad;cookie2=good"),
+        otis_var:parse("$(header:cookie)"))
+    ),
+    ?_assertMatch(
+      {_, "good"},
+      otis_var:get(
+        otis_var:set(#state{}, otis_var:parse("$(header:cookie)"),
+          "cookie1=bad;cookie2=good"),
+        otis_var:parse("$(cookie:cookie2)"))
+    ),
+    ?_assertMatch(
+      {_, "param=value%26value"},
+      otis_var:get(
+        otis_var:set(#state{}, otis_var:parse("$(cookie:param)"),
+          "value&value"),
+        otis_var:parse("$(header:cookie)"))
     )
   ]
 }
