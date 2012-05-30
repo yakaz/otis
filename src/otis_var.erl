@@ -436,7 +436,7 @@ get2(State,
   #var{prefix = undefined, name = "STATE"}, undefined) ->
     {State, lists:flatten(io_lib:format("~p", [State]))};
 get2(
-  #state{method = Method, headers = Headers,
+  #state{method = Method,
     response = Is_Resp, code = Code, reason = Reason,
     rheaders = RHeaders, http_ver = {Maj, Min}} = State,
   #var{prefix = undefined, name = "RESULT"}, undefined) ->
@@ -453,6 +453,8 @@ get2(
         true ->
             %% HTTP request.
             {State1, Path} = otis_utils:rebuild_path(State),
+            State2   = cookies_to_headers(State1),
+            Headers  = State2#state.headers,
             Headers1 = otis_utils:format_headers(Headers),
             Req = io_lib:format(
               "~s ~s HTTP/~b.~b\r\n"
