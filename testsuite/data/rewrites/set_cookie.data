@@ -1,0 +1,7 @@
+# vim:ft=yaml:
+
+- rule:
+  - set:
+      $(cookie:replace): "yes"
+      $(cookie:add): "yes"
+      $(cookie:remove):

@@ -1,0 +1,8 @@
+# vim:ft=yaml:
+
+- rule:
+  - match:
+      $(cookie:user): "a"
+      flags: i
+  - set:
+      $(PATH): "/match"

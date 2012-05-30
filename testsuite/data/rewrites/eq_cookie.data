@@ -1,0 +1,7 @@
+# vim:ft=yaml:
+
+- rule:
+  - eq:
+      $(cookie:user): "alice"
+  - set:
+      $(PATH): "/match"
