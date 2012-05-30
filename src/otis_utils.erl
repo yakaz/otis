@@ -21,6 +21,7 @@
     format_query/1,
     format_headers/1,
     capitalize_header/1,
+    parse_cookies/1,
     parse_cookie_header/1,
     format_cookie_header/1,
     response_content/1,
@@ -333,6 +334,9 @@ capitalize_header2([], Result) ->
 %% -------------------------------------------------------------------
 %% Cookie handling.
 %% -------------------------------------------------------------------
+
+parse_cookies(State) ->
+    otis_var:headers_to_cookies(State).
 
 parse_cookie_header(String) ->
     parse_cookie_header2(String, "", undefined, []).
