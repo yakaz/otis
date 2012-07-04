@@ -19,6 +19,9 @@ dist_erlsrc_DATA = otis_codegen.hrl					\
 		   ops/otis_op_goto.erl					\
 		   ops/otis_op_response.erl				\
 		   types/otis_type_int.erl				\
+		   types/otis_type_ipaddr.erl				\
+		   types/otis_type_ipmask.erl				\
+		   types/otis_type_iprange.erl				\
 		   types/otis_type_port.erl
 
 if HAVE_YAWS

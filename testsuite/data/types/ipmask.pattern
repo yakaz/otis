@@ -1,0 +1,61 @@
+%% vim:ft=erlang:
+
+%% TEST
+[
+  ?_assertMatch({{127,0,0,1}, 24},
+    otis_type_ipmask:from_string("127.0.0.1/24")),
+  ?_assertMatch({{0,0,0,0,0,0,0,1}, 64},
+    otis_type_ipmask:from_string("::1/64")),
+  ?_assertThrow(conversion_failed,
+    otis_type_ipmask:from_string("invalid")),
+  ?_assertThrow(conversion_failed,
+    otis_type_ipmask:from_string("127.0.0.1")),
+  ?_assertThrow(conversion_failed,
+    otis_type_ipmask:from_string("127.0.0.500/24")),
+  ?_assertThrow(conversion_failed,
+    otis_type_ipmask:from_string("127.0.0.1/64")),
+  ?_assertThrow(conversion_failed,
+    otis_type_ipmask:from_string("::1")),
+  ?_assertThrow(conversion_failed,
+    otis_type_ipmask:from_string("::G/64")),
+  ?_assertThrow(conversion_failed,
+    otis_type_ipmask:from_string("::1/250")),
+
+  ?_assertMatch("127.0.0.1/24",
+    otis_type_ipmask:to_string({{127,0,0,1}, 24})),
+  ?_assertMatch("::1/64",
+    otis_type_ipmask:to_string({{0,0,0,0,0,0,0,1}, 64})),
+
+  ?_assertMatch(true,  otis_type_ipmask:is_valid({{127,0,0,1}, 24})),
+  ?_assertMatch(true,  otis_type_ipmask:is_valid({{0,0,0,0,0,0,0,1}, 64})),
+  ?_assertMatch(false, otis_type_ipmask:is_valid(10)),
+  ?_assertMatch(false, otis_type_ipmask:is_valid({{1,2,3,500}, 24})),
+  ?_assertMatch(false, otis_type_ipmask:is_valid({{1,2,3,4}, 64})),
+  ?_assertMatch(false, otis_type_ipmask:is_valid({{1,2,3,4,5,6,7,8,9}, 64})),
+  ?_assertMatch(false, otis_type_ipmask:is_valid({{1,2,3,4,5,6,7,8}, 250})),
+  ?_assertMatch(false, otis_type_ipmask:is_valid(badarg)),
+
+  ?_assertMatch(true, otis_type_ipmask:match(
+      {{192,168,1,10}, 32}, {192,168,1,10})),
+  ?_assertMatch(false, otis_type_ipmask:match(
+      {{192,168,1,10}, 32}, {192,168,1,11})),
+
+  ?_assertMatch(true, otis_type_ipmask:match(
+      {{192,168,1,10}, 32}, {192,168,1,10})),
+  ?_assertMatch(true, otis_type_ipmask:match(
+      {{192,168,1,10}, 31}, {192,168,1,11})),
+  ?_assertMatch(false, otis_type_ipmask:match(
+      {{192,168,1,10}, 31}, {192,168,1,12})),
+
+  ?_assertMatch(true, otis_type_ipmask:match(
+      {{0,0,0,0,0,0,0,10}, 128}, {0,0,0,0,0,0,0,10})),
+  ?_assertMatch(false, otis_type_ipmask:match(
+      {{0,0,0,0,0,0,0,10}, 128}, {0,0,0,0,0,0,0,11})),
+
+  ?_assertMatch(true, otis_type_ipmask:match(
+      {{0,0,0,0,0,0,0,10}, 127}, {0,0,0,0,0,0,0,10})),
+  ?_assertMatch(true, otis_type_ipmask:match(
+      {{0,0,0,0,0,0,0,10}, 127}, {0,0,0,0,0,0,0,11})),
+  ?_assertMatch(false, otis_type_ipmask:match(
+      {{0,0,0,0,0,0,0,10}, 127}, {0,0,0,0,0,0,0,12}))
+]
