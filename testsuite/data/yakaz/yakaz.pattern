@@ -1,5 +1,8 @@
 %% vim:ft=erlang:
 
+%% INCLUDE
+"otis.hrl"
+
 %% DATA
 yakaz.conf
 
@@ -25,6 +28,49 @@ yakaz.conf
           otis:reload_engine_if_modified("${FILENAME}"),
           otis:cover_compile_engine_if_modified(true)
       end
+    ),
+
+    %% ---------------------------------------------------------------
+    %% X-Forwarded-For header handling.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.yakaz.fr\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.fr/", [
+          {"X-Forwarded-For", "192.168.1.1"}
+        ],
+        #state{client_ip = {127,0,0,1}})
+    ),
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.yakaz.fr\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.fr/", [
+          {"X-Forwarded-For", "192.168.1.1"}
+        ],
+        #state{client_ip = {0,0,0,0,0,0,0,1}})
+    ),
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "X-Forwarded-For: 192.168.1.1\r\n"
+      "Host: www.yakaz.fr\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.fr/", [
+          {"X-Forwarded-For", "192.168.1.1"}
+        ],
+        #state{client_ip = {172,0,16,10}})
+    ),
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "X-Forwarded-For: www.24rollers.com\r\n"
+      "Host: www.yakaz.fr\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.fr/", [
+          {"X-Forwarded-For", "www.24rollers.com"}
+        ],
+        #state{client_ip = {127,0,0,1}})
     ),
 
     %% ---------------------------------------------------------------
