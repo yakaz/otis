@@ -255,6 +255,7 @@ collapse2(#parser{result = Result} = Parser, Sub) ->
 %% -------------------------------------------------------------------
 
 domain(#var{prefix = undefined, name = "PATH"})        -> "request";
+domain(#var{prefix = undefined, name = "CLIENT_IP"})   -> "request";
 domain(#var{prefix = undefined, name = "CLIENT_PORT"}) -> "request";
 domain(#var{prefix = undefined, name = "SERVER_NAME"}) -> "request";
 domain(#var{prefix = undefined, name = "SERVER_PORT"}) -> "request";
@@ -266,6 +267,7 @@ domain(#var{prefix = undefined})                       -> "user";
 domain(#var{prefix = Prefix})                          -> Prefix.
 
 state_member(#var{prefix = undefined, name = "PATH"})        -> "path";
+state_member(#var{prefix = undefined, name = "CLIENT_IP"})   -> "client_ip";
 state_member(#var{prefix = undefined, name = "CLIENT_PORT"}) -> "client_port";
 state_member(#var{prefix = undefined, name = "SERVER_NAME"}) -> "server_name";
 state_member(#var{prefix = undefined, name = "SERVER_PORT"}) -> "server_port";
@@ -277,6 +279,7 @@ state_member(#var{prefix = undefined})                       -> "vars";
 state_member(_)                                              -> undefined.
 
 expected_type(#var{prefix = undefined, name = "PATH"})        -> string;
+expected_type(#var{prefix = undefined, name = "CLIENT_IP"})   -> ipaddr;
 expected_type(#var{prefix = undefined, name = "CLIENT_PORT"}) -> port;
 expected_type(#var{prefix = undefined, name = "SERVER_NAME"}) -> string;
 expected_type(#var{prefix = undefined, name = "SERVER_PORT"}) -> port;
@@ -394,6 +397,13 @@ get(State, Var, Type_Mod) ->
 get2(#state{path = Value} = State,
   #var{prefix = undefined, name = "PATH"}, undefined) ->
     {State, Value};
+get2(#state{client_ip = Value_C} = State,
+  #var{prefix = undefined, name = "CLIENT_IP"}, undefined) ->
+    Value_S = otis_type_ipaddr:to_string(Value_C),
+    {State, Value_S};
+get2(#state{client_ip = Value_C} = State,
+  #var{prefix = undefined, name = "CLIENT_IP"}, otis_type_ipaddr) ->
+    {State, Value_C};
 get2(#state{client_port = Value_C} = State,
   #var{prefix = undefined, name = "CLIENT_PORT"}, undefined) ->
     Value_S = otis_type_port:to_string(Value_C),
@@ -807,6 +817,16 @@ set(State, Var, Value) ->
 set(State, #var{prefix = undefined, name = "PATH"}, Value, undefined) ->
     State#state{
       path = Value
+    };
+set(State, #var{prefix = undefined, name = "CLIENT_IP"}, Value_S, undefined) ->
+    Value_C = otis_type_ipaddr:from_string(Value_S),
+    State#state{
+      client_ip = Value_C
+    };
+set(State, #var{prefix = undefined, name = "CLIENT_IP"}, Value_C,
+  otis_type_ipaddr) ->
+    State#state{
+      client_ip = Value_C
     };
 set(State, #var{prefix = undefined, name = "SERVER_NAME"}, Value, undefined) ->
     State#state{
