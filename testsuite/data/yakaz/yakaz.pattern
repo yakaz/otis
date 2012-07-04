@@ -215,6 +215,39 @@ yakaz.conf
     ),
 
     %% ---------------------------------------------------------------
+    %% AJAX fallback.
+    %% ---------------------------------------------------------------
+
+    ?_assertMatch(
+      "GET /ajax/notification.php HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/ajax/notification.php")
+    ),
+    ?_assertMatch(
+      "GET /ajax/subdir/notification.php HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/ajax/subdir/notification.php")
+    ),
+    ?_assertMatch(
+      "GET /ajax/index.php/notification HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/ajax/notification")
+    ),
+    ?_assertMatch(
+      "GET /ajax/index.php/subdir/notification HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request(
+        "http://www.yakaz.com/ajax/subdir/notification")
+    ),
+
+    %% ---------------------------------------------------------------
     %% /conv/.
     %% ---------------------------------------------------------------
 
@@ -288,13 +321,14 @@ yakaz.conf
           [
             begin
                 Req =
-                  "GET /" ++ Dir ++ "/pathinfo?querystring HTTP/1.1\r\n"
+                  "GET /" ++ Dir ++ "/pathinfo.php?querystring HTTP/1.1\r\n"
                   "Host: www.yakaz.com\r\n"
                   "\r\n",
                 ?_assertMatch(
                   Req,
                   otis_reqrw_engine:request(
-                    "http://www.yakaz.com/" ++ Dir ++ "/pathinfo?querystring")
+                    "http://www.yakaz.com/" ++ Dir ++
+                    "/pathinfo.php?querystring")
                 )
             end
             || Dir <- [
@@ -305,18 +339,30 @@ yakaz.conf
               "component",
               "css",
               "error",
+              "exec",
               "extjs",
               "facebook",
+              "font",
               "frame",
               "img",
               "internalservice",
               "js",
+              "lang",
+              "link-exchange",
+              "magpierss",
               "mobile",
               "php",
               "push",
               "services",
+              "sound",
               "tools",
-              "webmasters"
+              "twitter",
+              "webmasters",
+              "wayne",
+              "ws",
+              "ejabberd_mod_smuc",
+              "token_bucket",
+              "fileuploader"
             ]
           ]
       end
