@@ -4,10 +4,12 @@
 { "@VERSION@",
   [
     %% To upgrade from the specified version to current one.
+    {"1.0.3", [{restart_application, otis}]},
     {"1.0.2", [{restart_application, otis}]},
     {"1.0.1", [{restart_application, otis}]}
   ], [
     %% To downgrade from the current version to the specified one.
+    {"1.0.3", [{restart_application, otis}]},
     {"1.0.2", [{restart_application, otis}]},
     {"1.0.1", [{restart_application, otis}]}
   ]

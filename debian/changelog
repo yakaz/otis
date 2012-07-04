@@ -1,3 +1,11 @@
+erlang-otis (1.0.4-1) experimental; urgency=low
+
+  * New types for IP address, netmask and IP addresses range.
+  * Allow one to test ("eq") and set ("set") client IP address using the
+    $(CLIENT_IP) variable.
+
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Wed, 04 Jul 2012 16:02:41 +0200
+
 erlang-otis (1.0.3-2) experimental; urgency=low
 
   * Rename debian package.
