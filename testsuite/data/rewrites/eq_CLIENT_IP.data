@@ -1,0 +1,18 @@
+# vim:ft=yaml:
+
+- rule:
+  - any:
+    - eq:
+        $(CLIENT_IP): 127.0.0.1
+    - eq:
+        $(CLIENT_IP): ::1
+    - eq:
+        $(CLIENT_IP): 1.2.3.0/24
+    - eq:
+        $(CLIENT_IP): 1:2:3:4::/64
+    - eq:
+        $(CLIENT_IP): 127.0.0.10 127.0.0.20
+    - eq:
+        $(CLIENT_IP): ::a ::14
+  - set:
+      $(PATH): "/match"

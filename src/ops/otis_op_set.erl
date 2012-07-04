@@ -1,6 +1,7 @@
 -module(otis_op_set).
 
 -include_lib("yaml/include/yaml_nodes.hrl").
+-include_lib("yaml/include/yaml_nodes_yakaz.hrl").
 
 -include("otis.hrl").
 -include("otis_codegen.hrl").
@@ -56,6 +57,10 @@ create3(Ruleset, Keyword, [{Var, #yaml_str{text = Value}} | Rest], Result) ->
     create3(Ruleset, Keyword, Rest, [Op | Result]);
 create3(Ruleset, Keyword, [{Var, #yaml_int{value = Value}} | Rest], Result) ->
     Op = create4(Ruleset, Keyword, Var, Value, int),
+    create3(Ruleset, Keyword, Rest, [Op | Result]);
+create3(Ruleset, Keyword, [{Var, #yaml_ip_addr{address = Value}} | Rest],
+  Result) ->
+    Op = create4(Ruleset, Keyword, Var, Value, ipaddr),
     create3(Ruleset, Keyword, Rest, [Op | Result]);
 create3(_, _, [], Result) ->
     lists:reverse(Result);

@@ -1,0 +1,147 @@
+%% vim:ft=erlang:
+
+%% INCLUDE
+"otis.hrl"
+
+%% TEST
+{setup,
+  fun() ->
+      application:start(syslogger),
+      application:start(yaml),
+      application:start(otis),
+      otis_app:set_param(engine_save_dir, os:getenv("PWD"))
+  end,
+  fun(_) ->
+      error_logger:tty(false),
+      ok = application:stop(otis),
+      ok = application:stop(yaml),
+      ok = application:stop(syslogger)
+  end,
+  [
+    %% Compile engine.
+    ?_assertMatch(
+      ok,
+      otis:reload_engine_if_modified("${FILENAME}")
+    ),
+
+    %% Tests (IP address matching).
+    ?_assertMatch(
+      "GET /match HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("https://www.example.org/", [],
+        #state{
+          client_ip = {127,0,0,1}
+        })
+    ),
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.example.org/", [],
+        #state{
+          client_ip = {127,0,0,2}
+        })
+    ),
+    ?_assertMatch(
+      "GET /match HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("https://www.example.org/", [],
+        #state{
+          client_ip = {0,0,0,0,0,0,0,1}
+        })
+    ),
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.example.org/", [],
+        #state{
+          client_ip = {0,0,0,0,0,0,0,2}
+        })
+    ),
+
+    %% Tests (netmask matching).
+    ?_assertMatch(
+      "GET /match HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("https://www.example.org/", [],
+        #state{
+          client_ip = {1,2,3,1}
+        })
+    ),
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("https://www.example.org/", [],
+        #state{
+          client_ip = {1,2,4,1}
+        })
+    ),
+    ?_assertMatch(
+      "GET /match HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("https://www.example.org/", [],
+        #state{
+          client_ip = {1,2,3,4,1,1,1,1}
+        })
+    ),
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("https://www.example.org/", [],
+        #state{
+          client_ip = {1,2,3,5,1,1,1,1}
+        })
+    ),
+
+    %% Tests (range matching).
+    ?_assertMatch(
+      "GET /match HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("https://www.example.org/", [],
+        #state{
+          client_ip = {127,0,0,15}
+        })
+    ),
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("https://www.example.org/", [],
+        #state{
+          client_ip = {127,0,0,25}
+        })
+    ),
+    ?_assertMatch(
+      "GET /match HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("https://www.example.org/", [],
+        #state{
+          client_ip = {0,0,0,0,0,0,0,15}
+        })
+    ),
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("https://www.example.org/", [],
+        #state{
+          client_ip = {0,0,0,0,0,0,0,25}
+        })
+    ),
+
+    %% Remove engine.
+    ?_assertMatch(
+      ok,
+      otis:remove_saved_engine()
+    )
+  ]
+}

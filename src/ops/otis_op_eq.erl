@@ -1,6 +1,7 @@
 -module(otis_op_eq).
 
 -include_lib("yaml/include/yaml_nodes.hrl").
+-include_lib("yaml/include/yaml_nodes_yakaz.hrl").
 
 -include("otis.hrl").
 -include("otis_codegen.hrl").
@@ -61,6 +62,15 @@ create2(Ruleset, Keyword, Var, #yaml_null{}) ->
 create2(Ruleset, Keyword, Var, #yaml_int{value = Value}) ->
     %% Integer exact matching.
     create3(Ruleset, Keyword, Var, Value, int);
+create2(Ruleset, Keyword, Var, #yaml_ip_addr{address = IP}) ->
+    %% IP address exact matching.
+    create3(Ruleset, Keyword, Var, IP, ipaddr);
+create2(Ruleset, Keyword, Var, #yaml_ip_netmask{address = IP, mask = Mask}) ->
+    %% IP address netmask exact matching.
+    create3(Ruleset, Keyword, Var, {IP, Mask}, ipmask);
+create2(Ruleset, Keyword, Var, #yaml_ip_range{from = IP1, to = IP2}) ->
+    %% IP address range exact matching.
+    create3(Ruleset, Keyword, Var, {IP1, IP2}, iprange);
 create2(Ruleset, Keyword, _, Node) ->
     %% Unsupported type.
     Line = yaml_constr:node_line(Node),
@@ -71,6 +81,7 @@ create2(Ruleset, Keyword, _, Node) ->
 create3(_, Keyword, Var, Value, Type) ->
     Type1 = case otis_var:expected_type(Var) of
         undefined -> Type;
+        ipaddr    -> Type;
         T         -> T
     end,
     [#op_eq{
