@@ -31,7 +31,13 @@ load(File) ->
       file = File
     },
     try
-        YAML = case yaml_constr:file(File, [{simple_structs, false}]) of
+        YAML_Opts = [
+          {simple_structs, false},
+          {node_mods, [
+              yaml_node_ipaddr
+            ]}
+        ],
+        YAML = case yaml_constr:file(File, YAML_Opts) of
             [#yaml_doc{} = D | _] -> D;
             []                    -> #yaml_doc{root = #yaml_seq{}}
         end,
