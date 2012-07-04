@@ -5,6 +5,9 @@ nobase_dist_priv_DATA = sys.config					\
 			template/rule.erl				\
 			template/log.erl				\
 			template/eq_request_string.erl			\
+			template/eq_request_ipaddr.erl			\
+			template/eq_request_ipmask.erl			\
+			template/eq_request_iprange.erl			\
 			template/eq_request_port.erl			\
 			template/eq_user.erl				\
 			template/eq_query.erl				\
@@ -16,6 +19,7 @@ nobase_dist_priv_DATA = sys.config					\
 			template/match_header.erl			\
 			template/match_cookie.erl			\
 			template/set_request_string.erl			\
+			template/set_request_ipaddr.erl			\
 			template/set_request_port.erl			\
 			template/set_user_string.erl			\
 			template/set_user_int.erl			\
