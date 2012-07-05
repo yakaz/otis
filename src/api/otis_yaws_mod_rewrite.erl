@@ -162,11 +162,13 @@ back_to_yaws(
     %% Rebuild headers structure.
     Headers1 = headers_to_yaws(Headers),
     ARG#arg{
-      req     = Req1,
-      headers = Headers1
+      client_ip_port = {State#state.client_ip, State#state.client_port},
+      req            = Req1,
+      headers        = Headers1
     };
 back_to_yaws(
-  #state{response = true, code = Code, reason = Reason, rheaders = Headers},
+  #state{response = true, code = Code, reason = Reason,
+    rheaders = Headers} = State,
   ARG) ->
     {Content_Type, Content} = otis_utils:response_content(Code, Reason),
     Headers1 = case Content_Type of
@@ -183,7 +185,8 @@ back_to_yaws(
       content = Content
     },
     ARG#arg{
-      state = Resp
+      client_ip_port = {State#state.client_ip, State#state.client_port},
+      state          = Resp
     }.
 
 headers_from_yaws(Yaws) ->
