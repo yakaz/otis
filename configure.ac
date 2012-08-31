@@ -281,7 +281,7 @@ Provide yaws install path with --with-erlang-yaws.])])
 ERL_LIBS=$ERL_LIBS_save
 export ERL_LIBS
 
-AM_CONDITIONAL([HAVE_YAWS], [test "x${ERLANG_LIB_DIR_yaws}" != "x"])
+AM_CONDITIONAL([HAVE_YAWS], [test "x${ERLANG_LIB_DIR_yaws}" != "xnot found"])
 
 dnl ------------------------------------------------------------------
 dnl Final substitutions.
