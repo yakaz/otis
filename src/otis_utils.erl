@@ -356,9 +356,14 @@ parse_cookie_header2([], Name, Value, Result) ->
     Result1 = store_cookie(Result, Name, Value),
     lists:reverse(Result1).
 
+store_cookie(Result, "", _) ->
+    Result;
 store_cookie(Result, Name, Value) ->
     Name1 = unescape_uri(lists:reverse(Name)),
-    Value1 = unescape_uri(lists:reverse(Value)),
+    Value1 = case Value of
+        undefined -> "";
+        _         -> unescape_uri(lists:reverse(Value))
+    end,
     [{Name1, Value1, undefined, undefined} | Result].
 
 format_cookie_header(Cookies) ->
