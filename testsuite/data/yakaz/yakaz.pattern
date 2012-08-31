@@ -144,44 +144,150 @@ yakaz.conf
     ),
 
     %% ---------------------------------------------------------------
-    %% Components, sprites and CSS versioning.
+    %% JS, CSS, assets, components, sprites and flash.
     %% ---------------------------------------------------------------
 
     ?_assertMatch(
-      "GET /img/logo.png HTTP/1.1\r\n"
+      "GET /generated/js/Yakaz.js HTTP/1.1\r\n"
       "Host: www.yakaz.com\r\n"
       "\r\n",
-      otis_reqrw_engine:request("http://www.yakaz.com/img/logo.png")
+      otis_reqrw_engine:request("http://www.yakaz.com/js/Yakaz.js")
     ),
     ?_assertMatch(
-      "GET /img/sp_all.png HTTP/1.1\r\n"
+      "GET /generated/js/Yakaz.js HTTP/1.1\r\n"
       "Host: www.yakaz.com\r\n"
       "\r\n",
-      otis_reqrw_engine:request("http://www.yakaz.com/img/sp_all.13.png")
+      otis_reqrw_engine:request("http://www.yakaz.com/js/Yakaz.13.js")
     ),
     ?_assertMatch(
-      "GET /css/main.css HTTP/1.1\r\n"
+      "GET /js/Yakaz.js HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "Cookie: resources_genmode=js%3Ddebug%3B\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/js/Yakaz.js",
+        [{"Cookie", "resources_genmode=js%3Ddebug%3B"}])
+    ),
+    ?_assertMatch(
+      "GET /js/Yakaz.js HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "Cookie: resources_genmode=js%3Ddebug%3B\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/js/Yakaz.13.js",
+        [{"Cookie", "resources_genmode=js%3Ddebug%3B"}])
+    ),
+    ?_assertMatch(
+      "GET /generated/css/main.css HTTP/1.1\r\n"
       "Host: www.yakaz.com\r\n"
       "\r\n",
       otis_reqrw_engine:request("http://www.yakaz.com/css/main.css")
     ),
     ?_assertMatch(
+      "GET /generated/css/main.css HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/css/main.13.css")
+    ),
+    ?_assertMatch(
       "GET /css/main.css HTTP/1.1\r\n"
       "Host: www.yakaz.com\r\n"
+      "Cookie: resources_genmode=css%3Ddebug%3B\r\n"
       "\r\n",
-      otis_reqrw_engine:request("http://www.yakaz.com/css/main.3.css")
+      otis_reqrw_engine:request("http://www.yakaz.com/css/main.css",
+        [{"Cookie", "resources_genmode=css%3Ddebug%3B"}])
     ),
     ?_assertMatch(
-      "GET /component/fr/chat.js HTTP/1.1\r\n"
+      "GET /css/main.css HTTP/1.1\r\n"
       "Host: www.yakaz.com\r\n"
+      "Cookie: resources_genmode=css%3Ddebug%3B\r\n"
       "\r\n",
-      otis_reqrw_engine:request("http://www.yakaz.com/component/fr/chat.js")
+      otis_reqrw_engine:request("http://www.yakaz.com/css/main.13.css",
+        [{"Cookie", "resources_genmode=css%3Ddebug%3B"}])
     ),
     ?_assertMatch(
-      "GET /component/fr/chat.js HTTP/1.1\r\n"
+      "GET /generated/assets/123456.css HTTP/1.1\r\n"
       "Host: www.yakaz.com\r\n"
       "\r\n",
-      otis_reqrw_engine:request("http://www.yakaz.com/component/fr/chat.3.js")
+      otis_reqrw_engine:request("http://www.yakaz.com/assets/123456.css")
+    ),
+    ?_assertMatch(
+      "GET /generated/assets/123456.css HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/assets/123456.13.css")
+    ),
+    ?_assertMatch(
+      "GET /generated/assets/123456.debug.css HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "Cookie: resources_genmode=assets%3Ddebug%3B\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/assets/123456.css",
+        [{"Cookie", "resources_genmode=assets%3Ddebug%3B"}])
+    ),
+    ?_assertMatch(
+      "GET /generated/assets/123456.debug.css HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "Cookie: resources_genmode=assets%3Ddebug%3B\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/assets/123456.13.css",
+        [{"Cookie", "resources_genmode=assets%3Ddebug%3B"}])
+    ),
+    ?_assertMatch(
+      "GET /generated/components/fr/chat.js HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/components/fr/chat.js")
+    ),
+    ?_assertMatch(
+      "GET /generated/components/fr/chat.js HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/components/fr/chat.13.js")
+    ),
+    ?_assertMatch(
+      "GET /generated/components/chat.debug.js HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "Cookie: resources_genmode=components%3Ddebug%3B\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/components/chat.js",
+        [{"Cookie", "resources_genmode=components%3Ddebug%3B"}])
+    ),
+    ?_assertMatch(
+      "GET /generated/components/chat.debug.js HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "Cookie: resources_genmode=components%3Ddebug%3B\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/components/chat.13.js",
+        [{"Cookie", "resources_genmode=components%3Ddebug%3B"}])
+    ),
+    ?_assertMatch(
+      "GET /generated/sprites/sprite_all.png HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/sprites/sprite_all.png")
+    ),
+    ?_assertMatch(
+      "GET /generated/sprites/sprite_all.png HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/sprites/sprite_all.13.png")
+    ),
+    ?_assertMatch(
+      "GET /generated/flash/video.swf HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/flash/video.swf")
+    ),
+    ?_assertMatch(
+      "GET /generated/flash/video.swf HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/flash/video.13.swf")
+    ),
+    ?_assertMatch(
+      "GET /img/logo.png HTTP/1.1\r\n"
+      "Host: www.yakaz.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.yakaz.com/img/logo.png")
     ),
 
     %% ---------------------------------------------------------------
@@ -382,17 +488,15 @@ yakaz.conf
               "account",
               "admin2plazzad!",
               "ajax",
-              "component",
-              "css",
               "error",
               "exec",
               "extjs",
               "facebook",
               "font",
               "frame",
+              "generated",
               "img",
               "internalservice",
-              "js",
               "lang",
               "link-exchange",
               "magpierss",
