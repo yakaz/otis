@@ -1,3 +1,9 @@
+erlang-otis (1.0.4-3) experimental; urgency=low
+
+  * Recompile to support yaws-1.96
+
+ -- Christopher Faulet <christopher@yakaz.com>  Tue, 02 Apr 2013 14:03:12 +0200
+
 erlang-otis (1.0.4-2) experimental; urgency=low
 
   * Fix cookie parsing.
