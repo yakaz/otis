@@ -1,0 +1,7 @@
+# vim:ft=yaml:
+
+- rule:
+  - eq:
+      $(VHOST_NAME): www.example.com
+  - set:
+      $(PATH): "/match"

@@ -5,6 +5,9 @@
 -record(state, {
     rule_name    = "",
 
+    %% Server configuration.
+    vhost_name   = "",
+
     %% Request.
     client_ip    = undefined,
     client_port  = undefined,
@@ -20,6 +23,8 @@
     headers      = [],
     cookies      = undefined,
     query_parsed = false,
+    auth_user    = undefined,
+    auth_passwd  = undefined,
 
     %% Response (filled in case of a response or redirect).
     response     = false,
@@ -47,6 +52,7 @@
 
 -define(IS_VAR_WRITABLE(V), (
     V#var.prefix /= undefined orelse (
+      V#var.name /= "VHOST_NAME" andalso
       V#var.name /= "CLIENT_PORT" andalso
       V#var.name /= "SERVER_PORT" andalso
       V#var.name /= "RULE" andalso

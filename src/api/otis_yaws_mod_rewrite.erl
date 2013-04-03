@@ -17,6 +17,7 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
     %% Called by Yaws. We must convert the Yaws' structure to the
     %% internal one.
     %% Client and server IP address/port.
+    VHost_Name = yaws:sconf_servername(get(sc)),
     {Client_IP, Client_Port} = case ARG#arg.client_ip_port of
         {unknown, _} -> {undefined, undefined};
         CIP          -> CIP
@@ -35,6 +36,7 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
         is_atom(Method0) -> atom_to_list(Method0);
         true             -> Method0
     end,
+    {Auth_User, Auth_Passwd, _} = Headers0#headers.authorization,
     try
         Path0 = case Req#http_request.path of
             {abs_path, P0} -> P0;
@@ -47,6 +49,7 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
         %% We can now build our internal state and proceed with rules
         %% evaluation.
         State = #state{
+          vhost_name   = VHost_Name,
           client_ip    = Client_IP,
           client_port  = Client_Port,
           server_ip    = Server_IP,
@@ -57,7 +60,9 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
           path         = Path,
           query_str    = Query,
           query_parsed = false,
-          headers      = Headers
+          headers      = Headers,
+          auth_user    = Auth_User,
+          auth_passwd  = Auth_Passwd
         },
         State1 = otis_reqrw_engine:eval(State),
         %% We need to convert our internal state back to the Yaws'
@@ -161,10 +166,17 @@ back_to_yaws(
     },
     %% Rebuild headers structure.
     Headers1 = headers_to_yaws(Headers),
+    Headers2 = Headers1#headers{
+      authorization = {
+        State#state.auth_user,
+        State#state.auth_passwd,
+        element(3, Headers1#headers.authorization)
+      }
+    },
     ARG#arg{
       client_ip_port = {State#state.client_ip, State#state.client_port},
-      req            = Req1,
-      headers        = Headers1
+      req     = Req1,
+      headers = Headers2
     };
 back_to_yaws(
   #state{response = true, code = Code, reason = Reason,

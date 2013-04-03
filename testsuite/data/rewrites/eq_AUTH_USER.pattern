@@ -1,0 +1,67 @@
+%% vim:ft=erlang:
+
+%% INCLUDE
+"otis.hrl"
+
+%% TEST
+{setup,
+  fun() ->
+      application:start(syslogger),
+      application:start(yaml),
+      application:start(otis),
+      otis_app:set_param(engine_save_dir, os:getenv("PWD"))
+  end,
+  fun(_) ->
+      error_logger:tty(false),
+      ok = application:stop(otis),
+      ok = application:stop(yaml),
+      ok = application:stop(syslogger)
+  end,
+  [
+    %% Compile engine.
+    ?_assertMatch(
+      ok,
+      otis:reload_engine_if_modified("${FILENAME}")
+    ),
+
+    %% Tests (virtual host).
+    ?_assertMatch(
+      "GET /match HTTP/1.1\r\n"
+      "Authorization: Basic Ym9iOmNoYW5nZW1l\r\n"
+      "Host: www.example.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.example.com/", [
+          {"Authorization", "Basic Ym9iOmNoYW5nZW1l"} % "bob:changeme"
+        ],
+        #state{
+          auth_user   = "bob",
+          auth_passwd = "changeme"
+        })
+    ),
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Authorization: Basic YWxpY2U6Y2hhbmdlbWU=\r\n"
+      "Host: www.example.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.example.com/", [
+          {"Authorization", "Basic YWxpY2U6Y2hhbmdlbWU="} % "alice:changeme"
+        ],
+        #state{
+          auth_user   = "alice",
+          auth_passwd = "changeme"
+        })
+    ),
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.example.com/", [])
+    ),
+
+    %% Remove engine.
+    ?_assertMatch(
+      ok,
+      otis:remove_saved_engine()
+    )
+  ]
+}

@@ -1,0 +1,7 @@
+# vim:ft=yaml:
+
+- rule:
+  - eq:
+      $(AUTH_PASSWD): changeme
+  - set:
+      $(PATH): "/match"

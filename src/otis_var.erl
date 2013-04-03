@@ -254,6 +254,7 @@ collapse2(#parser{result = Result} = Parser, Sub) ->
 %% Template name.
 %% -------------------------------------------------------------------
 
+domain(#var{prefix = undefined, name = "VHOST_NAME"})  -> "request";
 domain(#var{prefix = undefined, name = "PATH"})        -> "request";
 domain(#var{prefix = undefined, name = "CLIENT_IP"})   -> "request";
 domain(#var{prefix = undefined, name = "CLIENT_PORT"}) -> "request";
@@ -263,9 +264,12 @@ domain(#var{prefix = undefined, name = "METHOD"})      -> "request";
 domain(#var{prefix = undefined, name = "SCHEME"})      -> "request";
 domain(#var{prefix = undefined, name = "QUERY"})       -> "request";
 domain(#var{prefix = undefined, name = "FRAGMENT"})    -> "request";
+domain(#var{prefix = undefined, name = "AUTH_USER"})   -> "request";
+domain(#var{prefix = undefined, name = "AUTH_PASSWD"}) -> "request";
 domain(#var{prefix = undefined})                       -> "user";
 domain(#var{prefix = Prefix})                          -> Prefix.
 
+state_member(#var{prefix = undefined, name = "VHOST_NAME"})  -> "vhost_name";
 state_member(#var{prefix = undefined, name = "PATH"})        -> "path";
 state_member(#var{prefix = undefined, name = "CLIENT_IP"})   -> "client_ip";
 state_member(#var{prefix = undefined, name = "CLIENT_PORT"}) -> "client_port";
@@ -275,9 +279,12 @@ state_member(#var{prefix = undefined, name = "METHOD"})      -> "method";
 state_member(#var{prefix = undefined, name = "SCHEME"})      -> "scheme";
 state_member(#var{prefix = undefined, name = "QUERY"})       -> "query_str";
 state_member(#var{prefix = undefined, name = "FRAGMENT"})    -> "fragment";
+state_member(#var{prefix = undefined, name = "AUTH_USER"})   -> "auth_user";
+state_member(#var{prefix = undefined, name = "AUTH_PASSWD"}) -> "auth_passwd";
 state_member(#var{prefix = undefined})                       -> "vars";
 state_member(_)                                              -> undefined.
 
+expected_type(#var{prefix = undefined, name = "VHOST_NAME"})  -> string;
 expected_type(#var{prefix = undefined, name = "PATH"})        -> string;
 expected_type(#var{prefix = undefined, name = "CLIENT_IP"})   -> ipaddr;
 expected_type(#var{prefix = undefined, name = "CLIENT_PORT"}) -> port;
@@ -287,6 +294,8 @@ expected_type(#var{prefix = undefined, name = "METHOD"})      -> string;
 expected_type(#var{prefix = undefined, name = "SCHEME"})      -> string;
 expected_type(#var{prefix = undefined, name = "QUERY"})       -> string;
 expected_type(#var{prefix = undefined, name = "FRAGMENT"})    -> string;
+expected_type(#var{prefix = undefined, name = "AUTH_USER"})   -> string;
+expected_type(#var{prefix = undefined, name = "AUTH_PASSWD"}) -> string;
 expected_type(_)                                              -> undefined.
 
 is_var([C | _])       when is_integer(C)     -> false;
@@ -394,6 +403,9 @@ get(State, Var, Type_Mod) ->
     {State1, Value} = get2(State, Var, Type_Mod),
     run_filters(State1, Var, Value, Type_Mod).
 
+get2(#state{vhost_name = Value} = State,
+  #var{prefix = undefined, name = "VHOST_NAME"}, undefined) ->
+    {State, Value};
 get2(#state{path = Value} = State,
   #var{prefix = undefined, name = "PATH"}, undefined) ->
     {State, Value};
@@ -436,6 +448,12 @@ get2(State, #var{prefix = undefined, name = "QUERY"} = Var, Type_Mod) ->
     get2(State1, Var, Type_Mod);
 get2(#state{fragment = Value} = State,
   #var{prefix = undefined, name = "FRAGMENT"}, undefined) ->
+    {State, Value};
+get2(#state{auth_user = Value} = State,
+  #var{prefix = undefined, name = "AUTH_USER"}, undefined) ->
+    {State, Value};
+get2(#state{auth_passwd = Value} = State,
+  #var{prefix = undefined, name = "AUTH_PASSWD"}, undefined) ->
     {State, Value};
 get2(State, #var{prefix = undefined, name = "URI"}, undefined) ->
     otis_utils:format_uri(State);
@@ -848,6 +866,14 @@ set(State, #var{prefix = undefined, name = "QUERY"}, Value, undefined) ->
 set(State, #var{prefix = undefined, name = "FRAGMENT"}, Value, undefined) ->
     State#state{
       fragment = Value
+    };
+set(State, #var{prefix = undefined, name = "AUTH_USER"}, Value, undefined) ->
+    State#state{
+      auth_user = Value
+    };
+set(State, #var{prefix = undefined, name = "AUTH_PASSWD"}, Value, undefined) ->
+    State#state{
+      auth_passwd = Value
     };
 set(State, #var{prefix = undefined, name = "URI"}, Value, undefined) ->
     case otis_utils:parse_uri(Value) of

@@ -1,0 +1,7 @@
+# vim:ft=yaml:
+
+- rule:
+  - eq:
+      $(AUTH_USER): bob
+  - set:
+      $(PATH): "/match"
