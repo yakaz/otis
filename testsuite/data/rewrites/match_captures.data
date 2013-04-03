@@ -2,6 +2,10 @@
 
 - rule:
   - match:
+      $(PATH): "(unhandled_capture)"
+
+- rule:
+  - match:
       $(PATH): "([0-9]+)"
       captures: [ $(PATH) ]
   - set:

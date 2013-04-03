@@ -278,7 +278,7 @@ handle_captures(State, [], Captured) ->
             ok;
         _ ->
             ?WARNING("~s: ~b captured values not handled: ~p~n",
-              [length(Captured), Captured])
+              [State#state.rule_name, length(Captured), Captured])
     end,
     State.
 

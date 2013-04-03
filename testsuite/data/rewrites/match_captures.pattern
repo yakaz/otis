@@ -40,6 +40,12 @@
       "\r\n",
       otis_reqrw_engine:request("http://www.example.org/2011/06.html")
     ),
+    ?_assertMatch(
+      "GET /unhandled_capture HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.example.org/unhandled_capture")
+    ),
 
     %% Remove engine.
     ?_assertMatch(
