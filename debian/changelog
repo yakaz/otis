@@ -1,3 +1,11 @@
+erlang-otis (1.0.5-1) experimental; urgency=low
+
+  * Store original request in #arg.opaque, using the 'orig_req' key.
+  * Add new variables: VHOST_NAME, AUTH_USER and AUTH_PASSWD.
+  * Bugfix.
+
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Wed, 03 Apr 2013 18:31:17 +0200
+
 erlang-otis (1.0.4-3) experimental; urgency=low
 
   * Recompile to support yaws-1.96
