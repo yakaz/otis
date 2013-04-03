@@ -36,7 +36,10 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
         is_atom(Method0) -> atom_to_list(Method0);
         true             -> Method0
     end,
-    {Auth_User, Auth_Passwd, _} = Headers0#headers.authorization,
+    {Auth_User, Auth_Passwd, _} = case Headers0#headers.authorization of
+        undefined -> {undefined, undefined, undefined};
+        Auth      -> Auth
+    end,
     ARG1 = ARG#arg{
       opaque = lists:keystore(orig_req, 1, ARG#arg.opaque, {orig_req, Req})
     },
@@ -168,12 +171,16 @@ back_to_yaws(
       path   = {abs_path, Path}
     },
     %% Rebuild headers structure.
-    Headers1 = headers_to_yaws(Headers),
+    Headers1  = headers_to_yaws(Headers),
+    Auth_Orig = case Headers1#headers.authorization of
+        undefined  -> undefined;
+        {_, _, AO} -> AO
+    end,
     Headers2 = Headers1#headers{
       authorization = {
         State#state.auth_user,
         State#state.auth_passwd,
-        element(3, Headers1#headers.authorization)
+        Auth_Orig
       }
     },
     ARG#arg{
