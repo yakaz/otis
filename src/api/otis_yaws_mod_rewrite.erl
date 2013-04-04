@@ -22,14 +22,19 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
         {unknown, _} -> {undefined, undefined};
         CIP          -> CIP
     end,
-    {Sock_Mod, Scheme} = if
-        is_port(Socket) -> {inet, "http"};
-        true            -> {ssl, "https"}
-    end,
-    {Server_IP, Server_Port} = case Sock_Mod:sockname(Socket) of
-        {ok, SIP} -> SIP;
-        _         -> {undefined, undefined}
-    end,
+    {Scheme, {Server_IP, Server_Port}} =
+        case yaws_api:get_sslsocket(Socket) of
+            undefined ->
+                case inet:sockname(Socket) of
+                    {ok, SIP} -> {"http", SIP};
+                    _         -> {"http", {undefined, undefined}}
+                end;
+            {ok, SSLSocket} ->
+                case ssl:sockname(SSLSocket) of
+                    {ok, SIP} -> {"http", SIP};
+                    _         -> {"http", {undefined, undefined}}
+                end
+        end,
     {Server_Name, _} = otis_utils:parse_host(Headers0#headers.host),
     Method0 = Req#http_request.method,
     Method  = if
