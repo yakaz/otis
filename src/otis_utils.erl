@@ -69,6 +69,8 @@ expand_path(Path) ->
 %% URI parsing.
 %% -------------------------------------------------------------------
 
+parse_uri([$/ | _] = String) ->
+    parse_path(String, undefined, undefined, undefined);
 parse_uri(String) ->
     parse_scheme(String, "").
 
@@ -80,8 +82,6 @@ parse_scheme([C | Rest], Scheme) ->
 parse_scheme([], _) ->
     undefined.
 
-parse_host(undefined, Scheme) ->
-    parse_host("", Scheme);
 parse_host([$[ | Rest], Scheme) ->
     parse_host_rfc2732(Rest, "", Scheme);
 parse_host(String, Scheme) ->
@@ -188,6 +188,8 @@ escape_uri([C | Rest], Result) ->
 escape_uri([], Result) ->
     Result.
 
+parse_host(undefined) ->
+    undefined;
 parse_host(Host) ->
     case parse_host(Host, "") of
         {_, Host1, Port, _, _} -> {Host1, Port};
