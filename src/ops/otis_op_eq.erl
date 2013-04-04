@@ -18,6 +18,8 @@
     query_param/4,
     header/3,
     header/4,
+    rheader/3,
+    rheader/4,
     cookie/3,
     cookie/4
   ]).
@@ -190,6 +192,26 @@ header(#state{headers = Headers} = State, Name, Value, Type_Mod) ->
         {R, Headers1} ->
             S1 = State#state{
               headers = Headers1
+            },
+            {R, S1};
+        R ->
+            {R, State}
+    end,
+    case Result of
+        match   -> State1;
+        nomatch -> otis_utils:abort(State1)
+    end.
+
+rheader(State, Name, Value) ->
+    rheader(State, Name, Value, undefined).
+
+rheader(#state{rheaders = Headers} = State, Name, Value, Type_Mod) ->
+    Name1 = string:to_lower(Name),
+    Ret   = loop(Name1, Value, Type_Mod, Headers, [], false),
+    {Result, State1} = case Ret of
+        {R, Headers1} ->
+            S1 = State#state{
+              rheaders = Headers1
             },
             {R, S1};
         R ->

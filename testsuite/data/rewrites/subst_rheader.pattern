@@ -1,0 +1,56 @@
+%% vim:ft=erlang:
+
+%% TEST
+{setup,
+  fun() ->
+      application:start(syslogger),
+      application:start(yaml),
+      application:start(otis),
+      otis_app:set_param(engine_save_dir, os:getenv("PWD"))
+  end,
+  fun(_) ->
+      error_logger:tty(false),
+      ok = application:stop(otis),
+      ok = application:stop(yaml),
+      ok = application:stop(syslogger)
+  end,
+  [
+    %% Compile engine.
+    ?_assertMatch(
+      ok,
+      otis:reload_engine_if_modified("${FILENAME}")
+    ),
+
+    %% Tests.
+    ?_assertMatch(
+      "HTTP/1.1 302 Moved Temporarily\r\n"
+      "Location: http://www.foobar.org/\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.foobar.org/")
+    ),
+    ?_assertMatch(
+      "HTTP/1.1 302 Moved Temporarily\r\n"
+      "Location: http://www.example.org/\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.example.org/")
+    ),
+    ?_assertMatch(
+      "HTTP/1.1 302 Moved Temporarily\r\n"
+      "Location: http://www.3xample.org/\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.Example.org/")
+    ),
+    ?_assertMatch(
+      "HTTP/1.1 302 Moved Temporarily\r\n"
+      "Location: http://www.3XAMPLE.org/\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.EXAMPLE.org/")
+    ),
+
+    %% Remove engine.
+    ?_assertMatch(
+      ok,
+      otis:remove_saved_engine()
+    )
+  ]
+}

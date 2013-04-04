@@ -1,0 +1,11 @@
+# vim:ft=yaml:
+
+- rule:
+  - eq:
+      $(header:x-otis-user): "alice"
+  - set:
+      $(rheader:x-otis): "Welcome!"
+  - eq:
+      $(rheader:x-otis): "Welcome!"
+  - set:
+      $(PATH): "/match"

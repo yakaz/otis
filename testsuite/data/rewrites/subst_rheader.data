@@ -1,0 +1,9 @@
+# vim:ft=yaml:
+
+- rule:
+  - set:
+      $(rheader:location): $(URI)
+  - subst:
+      $(rheader:location): "E"
+      value:               "3"
+  - response: 302

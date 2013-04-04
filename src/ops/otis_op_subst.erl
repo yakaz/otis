@@ -15,6 +15,7 @@
 -export([
     query_param/5,
     header/5,
+    rheader/5,
     cookie/5
   ]).
 
@@ -239,6 +240,14 @@ header(#state{headers = Headers} = State, Name, Regex, Flags,
     Headers1 = loop(Name1, Regex, Flags, Value, Headers, []),
     State#state{
       headers = Headers1
+    }.
+
+rheader(#state{rheaders = Headers} = State, Name, Regex, Flags,
+  Value) ->
+    Name1    = string:to_lower(Name),
+    Headers1 = loop(Name1, Regex, Flags, Value, Headers, []),
+    State#state{
+      rheaders = Headers1
     }.
 
 cookie(#state{cookies = undefined} = State, Name, Regex, Flags,

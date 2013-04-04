@@ -17,6 +17,7 @@
     handle_captures/3,
     query_param/5,
     header/5,
+    rheader/5,
     cookie/5
   ]).
 
@@ -311,6 +312,21 @@ header(#state{headers = Headers} = State, Name, Regex, Flags,
         {match, Captured, Headers1} ->
             State1 = State#state{
               headers = Headers1
+            },
+            handle_captures(State1, Captures, Captured)
+    end.
+
+rheader(#state{rheaders = Headers} = State, Name, Regex, Flags,
+  Captures) ->
+    Name1 = string:to_lower(Name),
+    case loop(Name1, Regex, Flags, Headers, [], false) of
+        nomatch ->
+            otis_utils:abort(State);
+        {match, Captured} ->
+            handle_captures(State, Captures, Captured);
+        {match, Captured, Headers1} ->
+            State1 = State#state{
+              rheaders = Headers1
             },
             handle_captures(State1, Captures, Captured)
     end.
