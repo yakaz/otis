@@ -43,6 +43,15 @@
           vhost_name = "api.example.com"
         })
     ),
+    ?_assertMatch(
+      "GET / HTTP/1.0\r\n"
+      "Host: api.example.com\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("/", [],
+        #state{
+          vhost_name = "api.example.com"
+        })
+    ),
 
     %% Remove engine.
     ?_assertMatch(
