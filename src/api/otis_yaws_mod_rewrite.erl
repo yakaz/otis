@@ -35,7 +35,10 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
                     _         -> {"http", {undefined, undefined}}
                 end
         end,
-    {Server_Name, _} = otis_utils:parse_host(Headers0#headers.host),
+    Host = case otis_utils:parse_host(Headers0#headers.host) of
+        {H, _}    -> H;
+        undefined -> VHost_Name
+    end,
     Method0 = Req#http_request.method,
     Method  = if
         is_atom(Method0) -> atom_to_list(Method0);
@@ -65,9 +68,9 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
           client_port  = Client_Port,
           server_ip    = Server_IP,
           server_port  = Server_Port,
-          server_name  = Server_Name,
           method       = Method,
           scheme       = Scheme,
+          host         = Host,
           path         = Path,
           query_str    = Query,
           query_parsed = false,

@@ -59,30 +59,63 @@ request(URI, Headers, State) ->
     lists:flatten(Result).
 
 request2(URI, Headers, State) ->
-    {Scheme, Host, Port, Path, Query} = otis_utils:parse_uri(URI),
+    {Scheme0, Host0, Port0, Path, Query} = otis_utils:parse_uri(URI),
+    %% Set default values for scheme/host/port if the given URL
+    %% specified only the path, which would be valid in HTTP/1.0 (ie. no
+    %% host in the URL and no "Host" header).
+    Scheme = case Scheme0 of
+        undefined -> "http";
+        _         -> Scheme0
+    end,
+    Host = case Host0 of
+        undefined ->
+            case State#state.vhost_name of
+                undefined -> throw(missing_host);
+                _         -> State#state.vhost_name
+            end;
+        _ ->
+            Host0
+    end,
+    Port = case Port0 of
+        undefined -> 80;
+        _         -> Port0
+    end,
     Server_IP = otis_utils:server_ip(Host),
     Headers1  = [
       {string:to_lower(H), V, undefined, undefined}
       || {H, V} <- Headers
     ],
+    Http_Ver = case Host0 of
+        undefined -> {1, 0};
+        _         -> {1, 1}
+    end,
     State1 = State#state{
-      server_name = Host,
       server_ip   = Server_IP,
       server_port = Port,
+      http_ver    = Http_Ver,
       method      = "GET",
       scheme      = Scheme,
+      host        = Host,
       path        = Path,
       headers     = Headers1,
       query_str   = Query
     },
-    State2 = case otis_var:get_header(State1, "host") of
-        {_, undefined} ->
-            Host1 = otis_utils:format_host(Scheme, Host, Port),
-            otis_var:set_header(State1, "host", Host1);
+    State2 = case State1#state.vhost_name of
+        undefined ->
+            State1#state{
+              vhost_name = Host
+            };
         _ ->
             State1
     end,
-    eval(State2).
+    State3 = case otis_var:get_header(State2, "host") of
+        {_, undefined} ->
+            Host1 = otis_utils:format_host(Scheme, Host, Port),
+            otis_var:set_header(State2, "host", Host1);
+        _ ->
+            State2
+    end,
+    eval(State3).
 
 eval(State) ->
     ?FIRST_RULE(State).

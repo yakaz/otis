@@ -11,12 +11,12 @@
     %% Request.
     client_ip    = undefined,
     client_port  = undefined,
-    server_name  = "",
     server_ip    = undefined,
     server_port  = undefined,
     http_ver     = {1, 1},
     method       = "GET",
     scheme       = "",
+    host         = "",
     path         = "",
     query_str    = "",
     fragment     = "",

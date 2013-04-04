@@ -258,10 +258,10 @@ domain(#var{prefix = undefined, name = "VHOST_NAME"})  -> "request";
 domain(#var{prefix = undefined, name = "PATH"})        -> "request";
 domain(#var{prefix = undefined, name = "CLIENT_IP"})   -> "request";
 domain(#var{prefix = undefined, name = "CLIENT_PORT"}) -> "request";
-domain(#var{prefix = undefined, name = "SERVER_NAME"}) -> "request";
 domain(#var{prefix = undefined, name = "SERVER_PORT"}) -> "request";
 domain(#var{prefix = undefined, name = "METHOD"})      -> "request";
 domain(#var{prefix = undefined, name = "SCHEME"})      -> "request";
+domain(#var{prefix = undefined, name = "HOST"})        -> "request";
 domain(#var{prefix = undefined, name = "QUERY"})       -> "request";
 domain(#var{prefix = undefined, name = "FRAGMENT"})    -> "request";
 domain(#var{prefix = undefined, name = "AUTH_USER"})   -> "request";
@@ -273,10 +273,10 @@ state_member(#var{prefix = undefined, name = "VHOST_NAME"})  -> "vhost_name";
 state_member(#var{prefix = undefined, name = "PATH"})        -> "path";
 state_member(#var{prefix = undefined, name = "CLIENT_IP"})   -> "client_ip";
 state_member(#var{prefix = undefined, name = "CLIENT_PORT"}) -> "client_port";
-state_member(#var{prefix = undefined, name = "SERVER_NAME"}) -> "server_name";
 state_member(#var{prefix = undefined, name = "SERVER_PORT"}) -> "server_port";
 state_member(#var{prefix = undefined, name = "METHOD"})      -> "method";
 state_member(#var{prefix = undefined, name = "SCHEME"})      -> "scheme";
+state_member(#var{prefix = undefined, name = "HOST"})        -> "host";
 state_member(#var{prefix = undefined, name = "QUERY"})       -> "query_str";
 state_member(#var{prefix = undefined, name = "FRAGMENT"})    -> "fragment";
 state_member(#var{prefix = undefined, name = "AUTH_USER"})   -> "auth_user";
@@ -288,7 +288,7 @@ expected_type(#var{prefix = undefined, name = "VHOST_NAME"})  -> string;
 expected_type(#var{prefix = undefined, name = "PATH"})        -> string;
 expected_type(#var{prefix = undefined, name = "CLIENT_IP"})   -> ipaddr;
 expected_type(#var{prefix = undefined, name = "CLIENT_PORT"}) -> port;
-expected_type(#var{prefix = undefined, name = "SERVER_NAME"}) -> string;
+expected_type(#var{prefix = undefined, name = "HOST"})        -> string;
 expected_type(#var{prefix = undefined, name = "SERVER_PORT"}) -> port;
 expected_type(#var{prefix = undefined, name = "METHOD"})      -> string;
 expected_type(#var{prefix = undefined, name = "SCHEME"})      -> string;
@@ -423,9 +423,6 @@ get2(#state{client_port = Value_C} = State,
 get2(#state{client_port = Value_C} = State,
   #var{prefix = undefined, name = "CLIENT_PORT"}, otis_type_port) ->
     {State, Value_C};
-get2(#state{server_name = Value} = State,
-  #var{prefix = undefined, name = "SERVER_NAME"}, undefined) ->
-    {State, Value};
 get2(#state{server_port = Value_C} = State,
   #var{prefix = undefined, name = "SERVER_PORT"}, undefined) ->
     Value_S = otis_type_port:to_string(Value_C),
@@ -438,6 +435,9 @@ get2(#state{method = Value} = State,
     {State, Value};
 get2(#state{scheme = Value} = State,
   #var{prefix = undefined, name = "SCHEME"}, undefined) ->
+    {State, Value};
+get2(#state{host = Value} = State,
+  #var{prefix = undefined, name = "HOST"}, undefined) ->
     {State, Value};
 get2(#state{query_parsed = false, query_str = Value} = State,
   #var{prefix = undefined, name = "QUERY"},
@@ -846,10 +846,6 @@ set(State, #var{prefix = undefined, name = "CLIENT_IP"}, Value_C,
     State#state{
       client_ip = Value_C
     };
-set(State, #var{prefix = undefined, name = "SERVER_NAME"}, Value, undefined) ->
-    State#state{
-      server_name = Value
-    };
 set(State, #var{prefix = undefined, name = "METHOD"}, Value, undefined) ->
     State#state{
       method = Value
@@ -857,6 +853,10 @@ set(State, #var{prefix = undefined, name = "METHOD"}, Value, undefined) ->
 set(State, #var{prefix = undefined, name = "SCHEME"}, Value, undefined) ->
     State#state{
       scheme = Value
+    };
+set(State, #var{prefix = undefined, name = "HOST"}, Value, undefined) ->
+    State#state{
+      host = Value
     };
 set(State, #var{prefix = undefined, name = "QUERY"}, Value, undefined) ->
     State#state{
@@ -880,7 +880,7 @@ set(State, #var{prefix = undefined, name = "URI"}, Value, undefined) ->
         {Scheme, Host, Port, Path, Query} ->
             Host1 = otis_utils:format_host(Scheme, Host, Port),
             State1 = State#state{
-              server_name  = Host,
+              host         = Host,
               server_ip    = undefined,
               server_port  = Port,
               scheme       = Scheme,
