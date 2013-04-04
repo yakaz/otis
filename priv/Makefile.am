@@ -12,11 +12,13 @@ nobase_dist_priv_DATA = sys.config					\
 			template/eq_user.erl				\
 			template/eq_query.erl				\
 			template/eq_header.erl				\
+			template/eq_rheader.erl				\
 			template/eq_cookie.erl				\
 			template/match_request.erl			\
 			template/match_user.erl				\
 			template/match_query.erl			\
 			template/match_header.erl			\
+			template/match_rheader.erl			\
 			template/match_cookie.erl			\
 			template/set_request_string.erl			\
 			template/set_request_ipaddr.erl			\
@@ -26,11 +28,13 @@ nobase_dist_priv_DATA = sys.config					\
 			template/set_user_port.erl			\
 			template/set_query.erl				\
 			template/set_header.erl				\
+			template/set_rheader.erl			\
 			template/set_cookie.erl				\
 			template/subst_request.erl			\
 			template/subst_user.erl				\
 			template/subst_query.erl			\
 			template/subst_header.erl			\
+			template/subst_rheader.erl			\
 			template/subst_cookie.erl			\
 			template/not.erl				\
 			template/all.erl				\
