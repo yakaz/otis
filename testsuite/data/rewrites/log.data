@@ -3,4 +3,4 @@
 - rule:
   - log: |
       == Otis Testsuite ==
-      Don't pay attention to surrounding errors fron Otis
+      Don't pay attention to surrounding errors from Otis
