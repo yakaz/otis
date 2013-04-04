@@ -1,0 +1,6 @@
+# vim:ft=yaml:
+
+- rule:
+  - subst:
+      $(header:host): "E"
+      value:          "3"
