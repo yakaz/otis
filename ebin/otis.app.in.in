@@ -13,6 +13,7 @@
     {applications, [
         kernel,
         stdlib,
+        syslogger,
         yaml
       ]},
     {mod, {otis_app, []}},
