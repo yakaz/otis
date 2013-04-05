@@ -1,3 +1,11 @@
+erlang-otis (1.0.6-1) experimental; urgency=low
+
+  * $(SERVER_NAME) becomes $(HOST).
+  * Response headers can be used in rules with "eq", "set", "match" and
+    "subst" operators.
+
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Fri, 05 Apr 2013 15:21:28 +0200
+
 erlang-otis (1.0.5-1) experimental; urgency=low
 
   * Store original request in #arg.opaque, using the 'orig_req' key.
