@@ -1,3 +1,10 @@
+erlang-otis (1.0.7-1) experimental; urgency=low
+
+  * Convert parsed cookies back to plain header before returning result to
+    Yaws.
+
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Tue, 09 Apr 2013 14:49:18 +0200
+
 erlang-otis (1.0.6-1) experimental; urgency=low
 
   * $(SERVER_NAME) becomes $(HOST).
