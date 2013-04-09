@@ -161,7 +161,7 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
 %% -------------------------------------------------------------------
 
 back_to_yaws(
-  #state{response = false, method = Method0, headers = Headers} = State,
+  #state{response = false, method = Method0} = State,
   #arg{req = Req} = ARG) ->
     %% Update HTTP request structure.
     Method = case Method0 of
@@ -179,6 +179,8 @@ back_to_yaws(
       path   = {abs_path, Path}
     },
     %% Rebuild headers structure.
+    State1    = otis_var:cookies_to_headers(State),
+    Headers   = State1#state.headers,
     Headers1  = headers_to_yaws(Headers),
     Auth_Orig = case Headers1#headers.authorization of
         undefined  -> undefined;

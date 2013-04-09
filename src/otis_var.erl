@@ -26,6 +26,7 @@
     get_cookie/2,
     get_cookie/3,
     headers_to_cookies/1,
+    cookies_to_headers/1,
     set/3,
     set/4,
     set_uservar/3,
