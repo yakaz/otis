@@ -1,3 +1,9 @@
+erlang-otis (1.0.7-2) experimental; urgency=low
+
+  * Recompile to support Yaws-1.96-1+yakaz3
+
+ -- Christopher Faulet <christopher@yakaz.com>  Mon, 06 May 2013 12:26:23 +0200
+
 erlang-otis (1.0.7-1) experimental; urgency=low
 
   * Convert parsed cookies back to plain header before returning result to
