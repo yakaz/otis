@@ -1,3 +1,9 @@
+erlang-otis (1.0.7-3) experimental; urgency=low
+
+  * Recompile to support Yaws-1.96-1+yakaz4
+
+ -- Christopher Faulet <christopher@yakaz.com>  Thu, 11 Jul 2013 14:31:46 +0200
+
 erlang-otis (1.0.7-2+wheezy1) experimental; urgency=low
 
   * Package for wheezy
