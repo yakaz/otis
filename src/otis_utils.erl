@@ -146,7 +146,10 @@ default_port("https") -> 443;
 default_port(_)       ->   0.
 
 format_uri(#state{scheme = Scheme} = State) ->
-    {State1, Host} = otis_var:get_header(State, "host"),
+    {State1, Host} = case otis_var:get_header(State, "host") of
+        {S1, undefined} -> {S1, State#state.host};
+        {S1, H1}        -> {S1, H1}
+    end,
     {State2, Path} = rebuild_path(State1),
     URI = Scheme ++ "://" ++ Host ++ Path,
     {State2, URI}.
