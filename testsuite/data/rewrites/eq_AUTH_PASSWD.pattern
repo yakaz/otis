@@ -27,8 +27,8 @@
     %% Tests (virtual host).
     ?_assertMatch(
       "GET /match HTTP/1.1\r\n"
-      "Authorization: Basic Ym9iOmNoYW5nZW1l\r\n"
       "Host: www.example.com\r\n"
+      "Authorization: Basic Ym9iOmNoYW5nZW1l\r\n"
       "\r\n",
       otis_reqrw_engine:request("http://www.example.com/", [
           {"Authorization", "Basic Ym9iOmNoYW5nZW1l"} % "bob:changeme"
@@ -40,8 +40,8 @@
     ),
     ?_assertMatch(
       "GET / HTTP/1.1\r\n"
-      "Authorization: Basic Ym9iOmZvb2Jhcg==\r\n"
       "Host: www.example.com\r\n"
+      "Authorization: Basic Ym9iOmZvb2Jhcg==\r\n"
       "\r\n",
       otis_reqrw_engine:request("http://www.example.com/", [
           {"Authorization", "Basic Ym9iOmZvb2Jhcg=="} % "bob:foobar"

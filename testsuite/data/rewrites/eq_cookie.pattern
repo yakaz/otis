@@ -30,16 +30,16 @@
     ),
     ?_assertMatch(
       "GET / HTTP/1.1\r\n"
-      "Cookie: lang=fr\r\n"
       "Host: www.example.org\r\n"
+      "Cookie: lang=fr\r\n"
       "\r\n",
       otis_reqrw_engine:request("http://www.example.org/",
         [{"Cookie", "lang=fr"}])
     ),
     ?_assertMatch(
       "GET / HTTP/1.1\r\n"
-      "Cookie: lang=fr;user=bob\r\n"
       "Host: www.example.org\r\n"
+      "Cookie: lang=fr;user=bob\r\n"
       "\r\n",
       otis_reqrw_engine:request("http://www.example.org/",
         [{"Cookie", "lang=fr;user=bob"}])

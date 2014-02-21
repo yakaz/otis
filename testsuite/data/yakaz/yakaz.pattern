@@ -54,8 +54,8 @@ yakaz.conf
     ),
     ?_assertMatch(
       "GET / HTTP/1.1\r\n"
-      "X-Forwarded-For: 192.168.1.1\r\n"
       "Host: www.yakaz.fr\r\n"
+      "X-Forwarded-For: 192.168.1.1\r\n"
       "\r\n",
       otis_reqrw_engine:request("http://www.yakaz.fr/", [
           {"X-Forwarded-For", "192.168.1.1"}
@@ -64,8 +64,8 @@ yakaz.conf
     ),
     ?_assertMatch(
       "GET / HTTP/1.1\r\n"
-      "X-Forwarded-For: www.24rollers.com\r\n"
       "Host: www.yakaz.fr\r\n"
+      "X-Forwarded-For: www.24rollers.com\r\n"
       "\r\n",
       otis_reqrw_engine:request("http://www.yakaz.fr/", [
           {"X-Forwarded-For", "www.24rollers.com"}
@@ -548,48 +548,48 @@ yakaz.conf
 
     ?_assertMatch(
       "GET /mobi/ HTTP/1.1\r\n"
-      "Accept: text/vnd.wap.wml\r\n"
       "Host: www.yakaz.com\r\n"
+      "Accept: text/vnd.wap.wml\r\n"
       "\r\n",
       otis_reqrw_engine:request(
         "http://www.yakaz.com/foobar", [{"Accept", "text/vnd.wap.wml"}])
     ),
     ?_assertMatch(
       "GET /mobi/ HTTP/1.1\r\n"
-      "User-Agent: foo wap bar\r\n"
       "Host: www.yakaz.com\r\n"
+      "User-Agent: foo wap bar\r\n"
       "\r\n",
       otis_reqrw_engine:request(
         "http://www.yakaz.com/foobar", [{"User-Agent", "foo wap bar"}])
     ),
     ?_assertMatch(
       "GET /mobi/ HTTP/1.1\r\n"
-      "User-Agent: foo Nokia7110 bar\r\n"
       "Host: www.yakaz.com\r\n"
+      "User-Agent: foo Nokia7110 bar\r\n"
       "\r\n",
       otis_reqrw_engine:request(
         "http://www.yakaz.com/foobar", [{"User-Agent", "foo Nokia7110 bar"}])
     ),
     ?_assertMatch(
       "GET /results.php?what=mobi&mod=rewrite&v=txt HTTP/1.1\r\n"
-      "Accept: text/vnd.wap.wml\r\n"
       "Host: www.yakaz.com\r\n"
+      "Accept: text/vnd.wap.wml\r\n"
       "\r\n",
       otis_reqrw_engine:request(
         "http://www.yakaz.com/mobi", [{"Accept", "text/vnd.wap.wml"}])
     ),
     ?_assertMatch(
       "GET /results.php?what=mobi&mod=rewrite&v=txt HTTP/1.1\r\n"
-      "User-Agent: foo wap bar\r\n"
       "Host: www.yakaz.com\r\n"
+      "User-Agent: foo wap bar\r\n"
       "\r\n",
       otis_reqrw_engine:request(
         "http://www.yakaz.com/mobi", [{"User-Agent", "foo wap bar"}])
     ),
     ?_assertMatch(
       "GET /results.php?what=mobi&mod=rewrite&v=txt HTTP/1.1\r\n"
-      "User-Agent: foo Nokia7110 bar\r\n"
       "Host: www.yakaz.com\r\n"
+      "User-Agent: foo Nokia7110 bar\r\n"
       "\r\n",
       otis_reqrw_engine:request(
         "http://www.yakaz.com/mobi", [{"User-Agent", "foo Nokia7110 bar"}])

@@ -42,16 +42,16 @@
     ),
     ?_assertMatch(
       "GET /index.html HTTP/1.1\r\n"
-      "X-Otis: foobar\r\n"
       "Host: www.example.org\r\n"
+      "X-Otis: foobar\r\n"
       "\r\n",
       otis_reqrw_engine:request("http://www.example.org/index.html",
         [{"X-Otis", "foobar"}])
     ),
     ?_assertMatch(
       "GET /match?user=alice HTTP/1.1\r\n"
-      "X-Otis: foobar\r\n"
       "Host: www.example.org\r\n"
+      "X-Otis: foobar\r\n"
       "\r\n",
       otis_reqrw_engine:request("http://www.example.org/index.html?user=alice",
         [{"X-Otis", "foobar"}])
