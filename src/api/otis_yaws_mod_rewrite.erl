@@ -1,17 +1,148 @@
 -module(otis_yaws_mod_rewrite).
 
+-include_lib("yaws/include/yaws.hrl").
 -include_lib("yaws/include/yaws_api.hrl").
 
 -include("otis.hrl").
 
 %% Public API.
 -export([
+    uri/1,
+    uri/2,
+    uri/3,
+    request/1,
+    request/2,
+    request/3,
     arg_rewrite/1
   ]).
 
 %% -------------------------------------------------------------------
 %% Public API.
 %% -------------------------------------------------------------------
+
+uri(URI) ->
+    uri(URI, []).
+
+uri(URI, Headers) ->
+    uri(URI, Headers, #state{}).
+
+uri(URI, Headers, State) ->
+    State1 = request2(URI, Headers, State),
+    Var = otis_var:parse("$(URI)"),
+    {_, Result} = otis_var:expand(State1, Var),
+    lists:flatten(Result).
+
+request(URI) ->
+    request(URI, []).
+
+request(URI, Headers) ->
+    request(URI, Headers, #state{}).
+
+request(URI, Headers, State) ->
+    State1 = request2(URI, Headers, State),
+    Var = otis_var:parse("$(RESULT)"),
+    {_, Result} = otis_var:expand(State1, Var),
+    lists:flatten(Result).
+
+request2(URI, Headers, State) ->
+    {Scheme0, Host0, Port0, Path, Query} = otis_utils:parse_uri(URI),
+    %% Set default values for scheme/host/port if the given URL
+    %% specified only the path, which would be valid in HTTP/1.0 (ie. no
+    %% host in the URL and no "Host" header).
+    Scheme = case Scheme0 of
+        undefined -> "http";
+        _         -> Scheme0
+    end,
+    Port = case Port0 of
+        undefined -> 80;
+        _         -> Port0
+    end,
+    Headers1  = [
+      {string:to_lower(H), V, undefined, undefined}
+      || {H, V} <- Headers
+    ],
+    Host1 = case lists:keyfind("host", 1, Headers1) of
+        false ->
+            case Host0 of
+                undefined -> State#state.vhost_name;
+                _         -> Host0
+            end;
+        H ->
+            H
+    end,
+    {ok, _, Groups} = yaws_server:getconf(),
+    Group = pick_group(Port, Groups),
+    Sconf = pick_sconf(Host1, Group),
+    VHost = Sconf#sconf.servername,
+    Host = case Host1 of
+        undefined -> VHost;
+        _         -> Host1
+    end,
+    Headers1  = [
+      {string:to_lower(H), V, undefined, undefined}
+      || {H, V} <- Headers
+    ],
+    Server_IP = otis_utils:server_ip(Host),
+    Http_Ver = case Host0 of
+        undefined -> {1, 0};
+        _         -> {1, 1}
+    end,
+    State1 = State#state{
+      server_ip   = Server_IP,
+      server_port = Port,
+      http_ver    = Http_Ver,
+      method      = "GET",
+      scheme      = Scheme,
+      host        = Host,
+      path        = Path,
+      headers     = Headers1,
+      query_str   = Query
+    },
+    State2 = case State1#state.vhost_name of
+        "" ->
+            State1#state{
+              vhost_name = VHost
+            };
+        _ ->
+            State1
+    end,
+    State3 = case otis_var:get_header(State2, "host") of
+        {_, undefined} ->
+            Host1 = otis_utils:format_host(Scheme, Host, Port),
+            otis_var:set_header(State2, "host", Host1);
+        _ ->
+            State2
+    end,
+    otis_reqrw_engine:eval(State3).
+
+pick_group(_, []) ->
+    throw(invalid_port);
+pick_group(Port, [[SC | _] = Group | _]) when SC#sconf.port == Port ->
+    Group;
+pick_group(Port, [_ | Groups]) ->
+    pick_group(Port, Groups).
+
+pick_sconf(Host, SCs) ->
+    pick_host(Host, SCs, SCs).
+
+pick_host(Host, SCs, All_SCs)
+  when Host == ""; Host == undefined; SCs == [] ->
+    hd(All_SCs);
+pick_host(Host, [SC | Rest], All_SCs) ->
+    case yaws_server:comp_sname(Host, SC#sconf.servername) of
+        true  ->
+            SC;
+        false ->
+            Res = lists:any(
+              fun(Alias) ->
+                  yaws_server:wildcomp_salias(Host, Alias)
+              end,
+              SC#sconf.serveralias),
+            case Res of
+                true  -> SC;
+                false -> pick_host(Host, Rest, All_SCs)
+            end
+    end.
 
 arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
     %% Called by Yaws. We must convert the Yaws' structure to the
