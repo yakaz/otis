@@ -67,24 +67,33 @@ request2(URI, Headers, State) ->
         undefined -> "http";
         _         -> Scheme0
     end,
-    Host = case Host0 of
-        undefined ->
-            case State#state.vhost_name of
-                undefined -> throw(missing_host);
-                _         -> State#state.vhost_name
-            end;
-        _ ->
-            Host0
-    end,
     Port = case Port0 of
         undefined -> 80;
         _         -> Port0
     end,
-    Server_IP = otis_utils:server_ip(Host),
     Headers1  = [
       {string:to_lower(H), V, undefined, undefined}
       || {H, V} <- Headers
     ],
+    Host = case lists:keyfind("host", 1, Headers1) of
+        false ->
+            case Host0 of
+                undefined ->
+                    case State#state.vhost_name of
+                        "" -> throw(missing_host);
+                        _  -> State#state.vhost_name
+                    end;
+                _ ->
+                    Host0
+            end;
+        H ->
+            H
+    end,
+    Headers2 = case lists:keymember("host", 1, Headers1) of
+        true  -> Headers1;
+        false -> [{"host", Host, undefined, undefined} | Headers1]
+    end,
+    Server_IP = otis_utils:server_ip(Host),
     Http_Ver = case Host0 of
         undefined -> {1, 0};
         _         -> {1, 1}
@@ -97,7 +106,7 @@ request2(URI, Headers, State) ->
       scheme      = Scheme,
       host        = Host,
       path        = Path,
-      headers     = Headers1,
+      headers     = Headers2,
       query_str   = Query
     },
     State2 = case State1#state.vhost_name of
