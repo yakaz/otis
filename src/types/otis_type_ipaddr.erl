@@ -88,11 +88,15 @@ compare({A1, _, _, _, _, _, _, _}, {A2, _, _, _, _, _, _, _}) when A1 > A2 ->
 %% Conversion.
 %% -------------------------------------------------------------------
 
+from_string("") ->
+    undefined;
 from_string(String) ->
     case inet_parse:address(String) of
         {ok, IP} -> IP;
         _        -> throw(conversion_failed)
     end.
 
+to_string(undefined) ->
+    "";
 to_string(IP) ->
     inet_parse:ntoa(IP).
