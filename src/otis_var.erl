@@ -255,20 +255,21 @@ collapse2(#parser{result = Result} = Parser, Sub) ->
 %% Template name.
 %% -------------------------------------------------------------------
 
-domain(#var{prefix = undefined, name = "VHOST_NAME"})  -> "request";
-domain(#var{prefix = undefined, name = "PATH"})        -> "request";
-domain(#var{prefix = undefined, name = "CLIENT_IP"})   -> "request";
-domain(#var{prefix = undefined, name = "CLIENT_PORT"}) -> "request";
-domain(#var{prefix = undefined, name = "SERVER_PORT"}) -> "request";
-domain(#var{prefix = undefined, name = "METHOD"})      -> "request";
-domain(#var{prefix = undefined, name = "SCHEME"})      -> "request";
-domain(#var{prefix = undefined, name = "HOST"})        -> "request";
-domain(#var{prefix = undefined, name = "QUERY"})       -> "request";
-domain(#var{prefix = undefined, name = "FRAGMENT"})    -> "request";
-domain(#var{prefix = undefined, name = "AUTH_USER"})   -> "request";
-domain(#var{prefix = undefined, name = "AUTH_PASSWD"}) -> "request";
-domain(#var{prefix = undefined})                       -> "user";
-domain(#var{prefix = Prefix})                          -> Prefix.
+domain(#var{prefix = undefined, name = "VHOST_NAME"})     -> "request";
+domain(#var{prefix = undefined, name = "PATH"})           -> "request";
+domain(#var{prefix = undefined, name = "CLIENT_IP"})      -> "request";
+domain(#var{prefix = undefined, name = "CLIENT_PORT"})    -> "request";
+domain(#var{prefix = undefined, name = "CLIENT_COUNTRY"}) -> "request";
+domain(#var{prefix = undefined, name = "SERVER_PORT"})    -> "request";
+domain(#var{prefix = undefined, name = "METHOD"})         -> "request";
+domain(#var{prefix = undefined, name = "SCHEME"})         -> "request";
+domain(#var{prefix = undefined, name = "HOST"})           -> "request";
+domain(#var{prefix = undefined, name = "QUERY"})          -> "request";
+domain(#var{prefix = undefined, name = "FRAGMENT"})       -> "request";
+domain(#var{prefix = undefined, name = "AUTH_USER"})      -> "request";
+domain(#var{prefix = undefined, name = "AUTH_PASSWD"})    -> "request";
+domain(#var{prefix = undefined})                          -> "user";
+domain(#var{prefix = Prefix})                             -> Prefix.
 
 state_member(#var{prefix = undefined, name = "VHOST_NAME"})  -> "vhost_name";
 state_member(#var{prefix = undefined, name = "PATH"})        -> "path";
@@ -285,19 +286,20 @@ state_member(#var{prefix = undefined, name = "AUTH_PASSWD"}) -> "auth_passwd";
 state_member(#var{prefix = undefined})                       -> "vars";
 state_member(_)                                              -> undefined.
 
-expected_type(#var{prefix = undefined, name = "VHOST_NAME"})  -> string;
-expected_type(#var{prefix = undefined, name = "PATH"})        -> string;
-expected_type(#var{prefix = undefined, name = "CLIENT_IP"})   -> ipaddr;
-expected_type(#var{prefix = undefined, name = "CLIENT_PORT"}) -> port;
-expected_type(#var{prefix = undefined, name = "HOST"})        -> string;
-expected_type(#var{prefix = undefined, name = "SERVER_PORT"}) -> port;
-expected_type(#var{prefix = undefined, name = "METHOD"})      -> string;
-expected_type(#var{prefix = undefined, name = "SCHEME"})      -> string;
-expected_type(#var{prefix = undefined, name = "QUERY"})       -> string;
-expected_type(#var{prefix = undefined, name = "FRAGMENT"})    -> string;
-expected_type(#var{prefix = undefined, name = "AUTH_USER"})   -> string;
-expected_type(#var{prefix = undefined, name = "AUTH_PASSWD"}) -> string;
-expected_type(_)                                              -> undefined.
+expected_type(#var{prefix = undefined, name = "VHOST_NAME"})     -> string;
+expected_type(#var{prefix = undefined, name = "PATH"})           -> string;
+expected_type(#var{prefix = undefined, name = "CLIENT_IP"})      -> ipaddr;
+expected_type(#var{prefix = undefined, name = "CLIENT_PORT"})    -> port;
+expected_type(#var{prefix = undefined, name = "CLIENT_COUNTRY"}) -> string;
+expected_type(#var{prefix = undefined, name = "HOST"})           -> string;
+expected_type(#var{prefix = undefined, name = "SERVER_PORT"})    -> port;
+expected_type(#var{prefix = undefined, name = "METHOD"})         -> string;
+expected_type(#var{prefix = undefined, name = "SCHEME"})         -> string;
+expected_type(#var{prefix = undefined, name = "QUERY"})          -> string;
+expected_type(#var{prefix = undefined, name = "FRAGMENT"})       -> string;
+expected_type(#var{prefix = undefined, name = "AUTH_USER"})      -> string;
+expected_type(#var{prefix = undefined, name = "AUTH_PASSWD"})    -> string;
+expected_type(_)                                                 -> undefined.
 
 is_var([C | _])       when is_integer(C)     -> false;
 is_var([[C | _] | _]) when is_integer(C)     -> true;
@@ -424,6 +426,25 @@ get2(#state{client_port = Value_C} = State,
 get2(#state{client_port = Value_C} = State,
   #var{prefix = undefined, name = "CLIENT_PORT"}, otis_type_port) ->
     {State, Value_C};
+get2(#state{client_country = undefined, client_ip = undefined} = State,
+  #var{prefix = undefined, name = "CLIENT_COUNTRY"}, undefined) ->
+    State1 = State#state{
+      client_country = ""
+    },
+    {State1, ""};
+get2(#state{client_country = undefined, client_ip = IP_Addr} = State,
+  #var{prefix = undefined, name = "CLIENT_COUNTRY"}, undefined) ->
+    Value = case otis_geoip:get_country_iso_code(IP_Addr) of
+        undefined -> "";
+        V         -> V
+    end,
+    State1 = State#state{
+      client_country = Value
+    },
+    {State1, Value};
+get2(#state{client_country = Value} = State,
+  #var{prefix = undefined, name = "CLIENT_COUNTRY"}, undefined) ->
+    {State, Value};
 get2(#state{server_port = Value_C} = State,
   #var{prefix = undefined, name = "SERVER_PORT"}, undefined) ->
     Value_S = otis_type_port:to_string(Value_C),
@@ -840,12 +861,19 @@ set(State, #var{prefix = undefined, name = "PATH"}, Value, undefined) ->
 set(State, #var{prefix = undefined, name = "CLIENT_IP"}, Value_S, undefined) ->
     Value_C = otis_type_ipaddr:from_string(Value_S),
     State#state{
-      client_ip = Value_C
+      client_ip = Value_C,
+      client_country = undefined
     };
 set(State, #var{prefix = undefined, name = "CLIENT_IP"}, Value_C,
   otis_type_ipaddr) ->
     State#state{
-      client_ip = Value_C
+      client_ip = Value_C,
+      client_country = undefined
+    };
+set(State, #var{prefix = undefined, name = "CLIENT_COUNTRY"}, Value,
+  undefined) ->
+    State#state{
+      client_country = Value
     };
 set(State, #var{prefix = undefined, name = "METHOD"}, Value, undefined) ->
     State#state{

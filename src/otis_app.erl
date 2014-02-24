@@ -37,6 +37,7 @@ params_list() ->
       config,
       templates_dir,
       engine_save_dir,
+      geoip_db,
       syslog_facility,
       syslog_loglevel
     ].
@@ -65,6 +66,10 @@ is_param_valid(engine_save_dir, "") ->
 is_param_valid(engine_save_dir, Value) ->
     Path = otis_utils:expand_path(Value),
     filelib:is_dir(Path);
+is_param_valid(geoip_db, none) ->
+    true;
+is_param_valid(geoip_db, Path) ->
+    io_lib:char_list(Path);
 is_param_valid(syslog_facility, Value) ->
     syslog:is_facility_valid(Value);
 is_param_valid(syslog_loglevel, Value) ->
@@ -133,6 +138,12 @@ log_param_errors([engine_save_dir = Param | Rest]) ->
     error_logger:warning_msg(
       "~s: invalid value for \"~s\": ~p.~n"
       "It must be a dirname.~n",
+      [?APPLICATION, Param, get_param(Param)]),
+    log_param_errors(Rest);
+log_param_errors([geoip_db = Param | Rest]) ->
+    error_logger:warning_msg(
+      "~s: invalid value for \"~s\": ~p.~n"
+      "It must be a 'none' or a path to GeoIP2-City.mmdb.~n",
       [?APPLICATION, Param, get_param(Param)]),
     log_param_errors(Rest);
 log_param_errors([syslog_facility = Param | Rest]) ->

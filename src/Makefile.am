@@ -8,6 +8,7 @@ dist_erlsrc_DATA = otis_codegen.hrl					\
 		   otis_var.erl						\
 		   otis_tpl.erl						\
 		   otis_utils.erl					\
+		   otis_geoip.erl					\
 		   ops/otis_op_log.erl					\
 		   ops/otis_op_eq.erl					\
 		   ops/otis_op_match.erl				\

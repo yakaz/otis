@@ -29,7 +29,16 @@ start_link() ->
 %% -------------------------------------------------------------------
 
 init(_) ->
+    GeoIP_Spec = {
+      otis_geoip,
+      {otis_geoip, start_link, []},
+      permanent,
+      infinity,
+      worker,
+      [otis_geoip]
+    },
     {ok, {
-        {one_for_one, 10, 1}, [
+        {one_for_one, 3, 1}, [
+          GeoIP_Spec
         ]
       }}.

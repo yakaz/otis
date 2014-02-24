@@ -23,6 +23,7 @@
         {config, none},
         {templates_dir, default},
         {engine_save_dir, "$HOME"},
+        {geoip_db, none},
         {syslog_facility, local3},
         {syslog_loglevel, info}
       ]}

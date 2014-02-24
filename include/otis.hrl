@@ -3,38 +3,39 @@
 %% -------------------------------------------------------------------
 
 -record(state, {
-    rule_name    = "",
+    rule_name      = "",
 
     %% Server configuration.
-    vhost_name   = "",
+    vhost_name     = "",
 
     %% Request.
-    client_ip    = undefined,
-    client_port  = undefined,
-    server_ip    = undefined,
-    server_port  = undefined,
-    http_ver     = {1, 1},
-    method       = "GET",
-    scheme       = "",
-    host         = "",
-    path         = "",
-    query_str    = "",
-    fragment     = "",
-    headers      = [],
-    cookies      = undefined,
-    query_parsed = false,
-    auth_user    = undefined,
-    auth_passwd  = undefined,
+    client_ip      = undefined,
+    client_port    = undefined,
+    client_country = undefined,
+    server_ip      = undefined,
+    server_port    = undefined,
+    http_ver       = {1, 1},
+    method         = "GET",
+    scheme         = "",
+    host           = "",
+    path           = "",
+    query_str      = "",
+    fragment       = "",
+    headers        = [],
+    cookies        = undefined,
+    query_parsed   = false,
+    auth_user      = undefined,
+    auth_passwd    = undefined,
 
     %% Response (filled in case of a response or redirect).
-    response     = false,
-    code         = 301,
-    reason       = undefined,
-    rheaders     = [],
-    rbody        = undefined,
+    response       = false,
+    code           = 301,
+    reason         = undefined,
+    rheaders       = [],
+    rbody          = undefined,
 
     %% User variables.
-    vars         = dict:new(),
+    vars           = dict:new(),
 
     other_state
   }).
