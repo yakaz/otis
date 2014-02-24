@@ -1,3 +1,11 @@
+erlang-otis (1.0.8-1) experimental; urgency=low
+
+  * Several bugfixes in otis_reqrw_engine's test functions.
+  * Add test functions to otis_yaws_mod_rewrite.
+  * Add $(CLIENT_COUNTRY) variable (GeoIP request on client's IP).
+
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Mon, 24 Feb 2014 15:31:47 +0100
+
 erlang-otis (1.0.7-3) experimental; urgency=low
 
   * Recompile to support Yaws-1.96-1+yakaz4
