@@ -1,3 +1,11 @@
+erlang-otis (1.0.9-1) experimental; urgency=low
+
+  * Yaws: When using an SSL socket, the scheme is "https", not "http".
+  * $(CLIENT_COUNTRY) can be matched with the client_ip #state member.
+  * otis_type_ipaddr: Fix crash if #state.client_ip is not set.
+
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Tue, 25 Feb 2014 16:24:17 +0100
+
 erlang-otis (1.0.8-1) experimental; urgency=low
 
   * Several bugfixes in otis_reqrw_engine's test functions.
