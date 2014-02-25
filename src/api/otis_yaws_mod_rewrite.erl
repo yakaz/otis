@@ -162,8 +162,8 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
                 end;
             {ok, SSLSocket} ->
                 case ssl:sockname(SSLSocket) of
-                    {ok, SIP} -> {"http", SIP};
-                    _         -> {"http", {undefined, undefined}}
+                    {ok, SIP} -> {"https", SIP};
+                    _         -> {"https", {undefined, undefined}}
                 end
         end,
     Host = case otis_utils:parse_host(Headers0#headers.host) of
