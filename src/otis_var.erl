@@ -275,6 +275,8 @@ state_member(#var{prefix = undefined, name = "VHOST_NAME"})  -> "vhost_name";
 state_member(#var{prefix = undefined, name = "PATH"})        -> "path";
 state_member(#var{prefix = undefined, name = "CLIENT_IP"})   -> "client_ip";
 state_member(#var{prefix = undefined, name = "CLIENT_PORT"}) -> "client_port";
+state_member(#var{prefix = undefined, name = "CLIENT_COUNTRY"}) ->
+    "client_country";
 state_member(#var{prefix = undefined, name = "SERVER_PORT"}) -> "server_port";
 state_member(#var{prefix = undefined, name = "METHOD"})      -> "method";
 state_member(#var{prefix = undefined, name = "SCHEME"})      -> "scheme";
