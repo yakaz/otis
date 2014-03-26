@@ -1,4 +1,5 @@
 #!@ESCRIPT@
+%%! -otis engine_save_dir "@builddir@"
 % -*-erlang-*-
 % vim:ft=erlang:
 
