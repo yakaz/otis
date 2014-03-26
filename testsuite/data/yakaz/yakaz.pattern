@@ -22,13 +22,15 @@ yakaz.conf
   end,
   [
     %% Compile engine.
-    ?_assertMatch(
-      ok,
-      begin
-          otis:reload_engine_if_modified("${FILENAME}"),
-          otis:cover_compile_engine_if_modified(true)
-      end
-    ),
+    {timeout, 60,
+      ?_assertMatch(
+        ok,
+        begin
+                otis:reload_engine_if_modified("${FILENAME}"),
+                otis:cover_compile_engine_if_modified(true)
+        end
+      )
+    },
 
     %% ---------------------------------------------------------------
     %% X-Forwarded-For header handling.
