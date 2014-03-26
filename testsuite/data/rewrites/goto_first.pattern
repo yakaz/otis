@@ -4,14 +4,14 @@
 {setup,
   fun() ->
       application:start(syslogger),
-      application:start(yaml),
+      application:start(yamerl),
       application:start(otis),
       otis_app:set_param(engine_save_dir, os:getenv("PWD"))
   end,
   fun(_) ->
       error_logger:tty(false),
       ok = application:stop(otis),
-      ok = application:stop(yaml),
+      ok = application:stop(yamerl),
       ok = application:stop(syslogger)
   end,
   [

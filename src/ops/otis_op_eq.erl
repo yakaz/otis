@@ -1,7 +1,7 @@
 -module(otis_op_eq).
 
--include_lib("yaml/include/yaml_nodes.hrl").
--include_lib("yaml/include/yaml_nodes_yakaz.hrl").
+-include_lib("yamerl/include/yamerl_nodes.hrl").
+-include_lib("yamerl/include/yamerl_nodes_yamerl_extensions.hrl").
 
 -include("otis.hrl").
 -include("otis_codegen.hrl").
@@ -29,54 +29,54 @@
 %% -------------------------------------------------------------------
 
 create(Ruleset, Keyword,
-  #yaml_map{pairs = [{#yaml_str{text = Var} = Node, Value}]}) ->
+  #yamerl_map{pairs = [{#yamerl_str{text = Var} = Node, Value}]}) ->
     case otis_var:parse(Var) of
         #var{} = Var1 ->
             create2(Ruleset, Keyword, Var1, Value);
         _ ->
-            Line = yaml_constr:node_line(Node),
-            Col  = yaml_constr:node_column(Node),
+            Line = yamerl_constr:node_line(Node),
+            Col  = yamerl_constr:node_column(Node),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: Left operand must be a variable.~n",
               [Line, Col])
     end;
 create(Ruleset, Keyword,
-  #yaml_map{pairs = [{Node, _}]}) ->
-    Line = yaml_constr:node_line(Node),
-    Col  = yaml_constr:node_column(Node),
+  #yamerl_map{pairs = [{Node, _}]}) ->
+    Line = yamerl_constr:node_line(Node),
+    Col  = yamerl_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Left operand must be a variable.~n",
       [Line, Col]);
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_constr:node_line(Node),
-    Col  = yaml_constr:node_column(Node),
+    Line = yamerl_constr:node_line(Node),
+    Col  = yamerl_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected a map of the \"variable: value\".~n",
       [Line, Col]).
 
-create2(Ruleset, Keyword, Var, #yaml_str{text = Value}) ->
+create2(Ruleset, Keyword, Var, #yamerl_str{text = Value}) ->
     %% String exact matching.
     Value1 = otis_var:parse(Value),
     create3(Ruleset, Keyword, Var, Value1, string);
-create2(Ruleset, Keyword, Var, #yaml_null{}) ->
+create2(Ruleset, Keyword, Var, #yamerl_null{}) ->
     %% Empty or no value at all.
     create3(Ruleset, Keyword, Var, "", string);
-create2(Ruleset, Keyword, Var, #yaml_int{value = Value}) ->
+create2(Ruleset, Keyword, Var, #yamerl_int{value = Value}) ->
     %% Integer exact matching.
     create3(Ruleset, Keyword, Var, Value, int);
-create2(Ruleset, Keyword, Var, #yaml_ip_addr{address = IP}) ->
+create2(Ruleset, Keyword, Var, #yamerl_ip_addr{address = IP}) ->
     %% IP address exact matching.
     create3(Ruleset, Keyword, Var, IP, ipaddr);
-create2(Ruleset, Keyword, Var, #yaml_ip_netmask{address = IP, mask = Mask}) ->
+create2(Ruleset, Keyword, Var, #yamerl_ip_netmask{address = IP, mask = Mask}) ->
     %% IP address netmask exact matching.
     create3(Ruleset, Keyword, Var, {IP, Mask}, ipmask);
-create2(Ruleset, Keyword, Var, #yaml_ip_range{from = IP1, to = IP2}) ->
+create2(Ruleset, Keyword, Var, #yamerl_ip_range{from = IP1, to = IP2}) ->
     %% IP address range exact matching.
     create3(Ruleset, Keyword, Var, {IP1, IP2}, iprange);
 create2(Ruleset, Keyword, _, Node) ->
     %% Unsupported type.
-    Line = yaml_constr:node_line(Node),
-    Col  = yaml_constr:node_column(Node),
+    Line = yamerl_constr:node_line(Node),
+    Col  = yamerl_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Type of right operand is unsupported~n", [Line, Col]).
 
@@ -90,8 +90,8 @@ create3(_, Keyword, Var, Value, Type) ->
         var   = Var,
         value = Value,
         type  = Type1,
-        line  = yaml_constr:node_line(Keyword),
-        col   = yaml_constr:node_column(Keyword)
+        line  = yamerl_constr:node_line(Keyword),
+        col   = yamerl_constr:node_column(Keyword)
       }].
 
 %% -------------------------------------------------------------------

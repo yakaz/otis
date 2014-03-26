@@ -1,6 +1,6 @@
 -module(otis_op_response).
 
--include_lib("yaml/include/yaml_nodes.hrl").
+-include_lib("yamerl/include/yamerl_nodes.hrl").
 
 -include("otis.hrl").
 -include("otis_codegen.hrl").
@@ -25,38 +25,38 @@
 %% Public API.
 %% -------------------------------------------------------------------
 
-create(Ruleset, Keyword, #yaml_int{value = Code}) when Code > 0 ->
+create(Ruleset, Keyword, #yamerl_int{value = Code}) when Code > 0 ->
     %% The user only specified an HTTP code.
     Op = #op_response{
       code = Code
     },
     create3(Ruleset, Keyword, Op);
-create(Ruleset, Keyword, #yaml_map{pairs = Pairs}) ->
+create(Ruleset, Keyword, #yamerl_map{pairs = Pairs}) ->
     %% The user specified one or several attributes.
     create2(Ruleset, Keyword, #op_response{}, Pairs);
-create(Ruleset, Keyword, #yaml_int{} = Node) ->
-    Line = yaml_constr:node_line(Node),
-    Col  = yaml_constr:node_column(Node),
+create(Ruleset, Keyword, #yamerl_int{} = Node) ->
+    Line = yamerl_constr:node_line(Node),
+    Col  = yamerl_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: An HTTP code must be greater than zero.~n",
       [Line, Col]);
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_constr:node_line(Node),
-    Col  = yaml_constr:node_column(Node),
+    Line = yamerl_constr:node_line(Node),
+    Col  = yamerl_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected an HTTP code or "
       "a map of the form \"attribute: value\".~n",
       [Line, Col]).
 
 create2(Ruleset, Keyword, Op,
-  [{#yaml_str{text = "code"}, #yaml_int{value = Code}} | Rest])
+  [{#yamerl_str{text = "code"}, #yamerl_int{value = Code}} | Rest])
   when ?VALID_HTTP_CODE(Code) ->
     Op1 = Op#op_response{
       code = Code
     },
     create2(Ruleset, Keyword, Op1, Rest);
 create2(Ruleset, Keyword, Op,
-  [{#yaml_str{text = "reason"}, #yaml_str{text = Reason}} | Rest]) ->
+  [{#yamerl_str{text = "reason"}, #yamerl_str{text = Reason}} | Rest]) ->
     Op1 = Op#op_response{
       reason = Reason
     },
@@ -64,15 +64,15 @@ create2(Ruleset, Keyword, Op,
 create2(Ruleset, Keyword, Op, []) ->
     create3(Ruleset, Keyword, Op);
 create2(Ruleset, Keyword, _,
-  [{#yaml_str{text = "code"}, #yaml_int{} = Node} | _]) ->
-    Line = yaml_constr:node_line(Node),
-    Col  = yaml_constr:node_column(Node),
+  [{#yamerl_str{text = "code"}, #yamerl_int{} = Node} | _]) ->
+    Line = yamerl_constr:node_line(Node),
+    Col  = yamerl_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: \"code\" must be a valid HTTP code.~n",
       [Line, Col]);
 create2(Ruleset, Keyword, _, [{Attr, _} | _]) ->
-    Line = yaml_constr:node_line(Attr),
-    Col  = yaml_constr:node_column(Attr),
+    Line = yamerl_constr:node_line(Attr),
+    Col  = yamerl_constr:node_column(Attr),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Unsupported attribute.~n",
       [Line, Col]).
@@ -84,8 +84,8 @@ create3(Ruleset, Keyword, #op_response{code = Code, reason = undefined} = Op) ->
     create3(Ruleset, Keyword, Op1);
 create3(_, Keyword, Op) ->
     Op1 = Op#op_response{
-      line = yaml_constr:node_line(Keyword),
-      col  = yaml_constr:node_column(Keyword)
+      line = yamerl_constr:node_line(Keyword),
+      col  = yamerl_constr:node_column(Keyword)
     },
     [Op1].
 

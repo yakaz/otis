@@ -1,6 +1,6 @@
 -module(otis_op_log).
 
--include_lib("yaml/include/yaml_nodes.hrl").
+-include_lib("yamerl/include/yamerl_nodes.hrl").
 
 -include("otis.hrl").
 -include("otis_codegen.hrl").
@@ -20,16 +20,16 @@
 %% Public API.
 %% -------------------------------------------------------------------
 
-create(_, Keyword, #yaml_str{text = Format_String}) ->
+create(_, Keyword, #yamerl_str{text = Format_String}) ->
     Prepared = otis_var:parse(Format_String),
     [#op_log{
         format_str = Prepared,
-        line       = yaml_constr:node_line(Keyword),
-        col        = yaml_constr:node_column(Keyword)
+        line       = yamerl_constr:node_line(Keyword),
+        col        = yamerl_constr:node_column(Keyword)
       }];
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_constr:node_line(Node),
-    Col  = yaml_constr:node_column(Node),
+    Line = yamerl_constr:node_line(Node),
+    Col  = yamerl_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected a message to log (string).~n",
       [Line, Col]).

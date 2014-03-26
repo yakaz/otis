@@ -243,22 +243,22 @@ Provide eunit install path with --with-erlang-eunit.])])
 ERL_LIBS=$ERL_LIBS_save
 export ERL_LIBS
 
-dnl "yaml" install directory.
-AC_ARG_WITH([erlang_yaml],
-	AC_HELP_STRING([--with-erlang-yaml=PREFIX],
-		       [prefix where the "yaml" Erlang application is installed (optional)]),
-	with_erlang_yaml=${withval%/},
-	with_erlang_yaml="")
+dnl "yamerl" install directory.
+AC_ARG_WITH([erlang_yamerl],
+	AC_HELP_STRING([--with-erlang-yamerl=PREFIX],
+		       [prefix where the "yamerl" Erlang application is installed (optional)]),
+	with_erlang_yamerl=${withval%/},
+	with_erlang_yamerl="")
 
 ERL_LIBS_save=$ERL_LIBS
-if test "x${with_erlang_yaml}" != "x"; then
-	ERL_LIBS="${with_erlang_yaml}:${ERL_LIBS}"
+if test "x${with_erlang_yamerl}" != "x"; then
+	ERL_LIBS="${with_erlang_yamerl}:${ERL_LIBS}"
 fi
 export ERL_LIBS
-AC_ERLANG_CHECK_LIB([yaml],, [AC_MSG_ERROR([
-"yaml" Erlang application not found.
+AC_ERLANG_CHECK_LIB([yamerl],, [AC_MSG_ERROR([
+"yamerl" Erlang application not found.
 
-Provide yaml install path with --with-erlang-yaml.])])
+Provide yamerl install path with --with-erlang-yamerl.])])
 ERL_LIBS=$ERL_LIBS_save
 export ERL_LIBS
 

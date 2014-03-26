@@ -1,6 +1,6 @@
 -module(otis_op_all).
 
--include_lib("yaml/include/yaml_nodes.hrl").
+-include_lib("yamerl/include/yamerl_nodes.hrl").
 
 -include("otis.hrl").
 -include("otis_codegen.hrl").
@@ -15,15 +15,15 @@
 %% String parsing.
 %% -------------------------------------------------------------------
 
-create(Ruleset, Keyword, #yaml_seq{entries = Sub_Exprs}) ->
+create(Ruleset, Keyword, #yamerl_seq{entries = Sub_Exprs}) ->
     [#op_all{
         subexprs = otis_conf:create_exprs(Ruleset, Sub_Exprs),
-        line     = yaml_constr:node_line(Keyword),
-        col      = yaml_constr:node_column(Keyword)
+        line     = yamerl_constr:node_line(Keyword),
+        col      = yamerl_constr:node_column(Keyword)
       }];
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_constr:node_line(Node),
-    Col  = yaml_constr:node_column(Node),
+    Line = yamerl_constr:node_line(Node),
+    Col  = yamerl_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected a sequence of sub-expressions.~n",
       [Line, Col]).

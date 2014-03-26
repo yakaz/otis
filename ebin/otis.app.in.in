@@ -14,7 +14,7 @@
         kernel,
         stdlib,
         syslogger,
-        yaml
+        yamerl
       ]},
     {mod, {otis_app, []}},
     {env, [

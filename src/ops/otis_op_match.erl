@@ -1,6 +1,6 @@
 -module(otis_op_match).
 
--include_lib("yaml/include/yaml_nodes.hrl").
+-include_lib("yamerl/include/yamerl_nodes.hrl").
 
 -include("otis.hrl").
 -include("otis_codegen.hrl").
@@ -25,17 +25,17 @@
 %% Public API.
 %% -------------------------------------------------------------------
 
-create(Ruleset, Keyword, #yaml_map{pairs = Args}) ->
+create(Ruleset, Keyword, #yamerl_map{pairs = Args}) ->
     create2(Ruleset, Keyword, Args, #op_match{});
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_constr:node_line(Node),
-    Col  = yaml_constr:node_column(Node),
+    Line = yamerl_constr:node_line(Node),
+    Col  = yamerl_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected a map of the form \"variable: regex\".~n",
       [Line, Col]).
 
 create2(Ruleset, Keyword,
-  [{#yaml_str{text = "captures"}, #yaml_seq{entries = Captures}} | Rest],
+  [{#yamerl_str{text = "captures"}, #yamerl_seq{entries = Captures}} | Rest],
   #op_match{captures = []} = Op) ->
     Captures1 = create_captures(Ruleset, Keyword, Captures, []),
     Op1 = Op#op_match{
@@ -43,7 +43,7 @@ create2(Ruleset, Keyword,
     },
     create2(Ruleset, Keyword, Rest, Op1);
 create2(Ruleset, Keyword,
-  [{#yaml_str{text = "flags"}, #yaml_str{text = Flags} = Node} | Rest],
+  [{#yamerl_str{text = "flags"}, #yamerl_str{text = Flags} = Node} | Rest],
   #op_match{match_flags = []} = Op) ->
     {Compile_Flags, Match_Flags} = create_flags(Ruleset, Keyword,
       Node, Flags),
@@ -53,12 +53,12 @@ create2(Ruleset, Keyword,
     },
     create2(Ruleset, Keyword, Rest, Op1);
 create2(Ruleset, Keyword,
-  [{#yaml_str{text = Var} = Node, #yaml_str{text = Value}} | Rest],
+  [{#yamerl_str{text = Var} = Node, #yamerl_str{text = Value}} | Rest],
   #op_match{var = undefined} = Op) ->
     case otis_var:parse(Var) of
         #var{} = Var1 ->
-            Line   = yaml_constr:node_line(Keyword),
-            Col    = yaml_constr:node_column(Keyword),
+            Line   = yamerl_constr:node_line(Keyword),
+            Col    = yamerl_constr:node_column(Keyword),
             Value1 = otis_var:parse(Value),
             Op1 = Op#op_match{
               var   = Var1,
@@ -68,8 +68,8 @@ create2(Ruleset, Keyword,
             },
             create2(Ruleset, Keyword, Rest, Op1);
         _ ->
-            Line = yaml_constr:node_line(Node),
-            Col  = yaml_constr:node_column(Node),
+            Line = yamerl_constr:node_line(Node),
+            Col  = yamerl_constr:node_column(Node),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: Left operand must be a variable.~n",
               [Line, Col])
@@ -79,77 +79,77 @@ create2(_, Keyword, [],
   when Var /= undefined andalso Regex /= undefined ->
     Op1 = Op#op_match{
       match_flags = [{capture, all_but_first, list} | Match],
-      line        = yaml_constr:node_line(Keyword),
-      col         = yaml_constr:node_column(Keyword)
+      line        = yamerl_constr:node_line(Keyword),
+      col         = yamerl_constr:node_column(Keyword)
     },
     [Op1];
 create2(Ruleset, Keyword,
-  [{#yaml_str{text = "captures"} = Attr, Node} | _],
+  [{#yamerl_str{text = "captures"} = Attr, Node} | _],
   #op_match{captures = Captures}) ->
     case Captures of
         [] ->
-            Line = yaml_constr:node_line(Attr),
-            Col  = yaml_constr:node_column(Attr),
+            Line = yamerl_constr:node_line(Attr),
+            Col  = yamerl_constr:node_column(Attr),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: Only one \"captures\" attribute allowed.~n",
               [Line, Col]);
         _ ->
-            Line = yaml_constr:node_line(Node),
-            Col  = yaml_constr:node_column(Node),
+            Line = yamerl_constr:node_line(Node),
+            Col  = yamerl_constr:node_column(Node),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: \"captures\" must be a list of variable.~n",
               [Line, Col])
     end;
 create2(Ruleset, Keyword,
-  [{#yaml_str{text = "flags"} = Attr, Node} | _],
+  [{#yamerl_str{text = "flags"} = Attr, Node} | _],
   #op_match{match_flags = Flags}) ->
     case Flags of
         [] ->
-            Line = yaml_constr:node_line(Attr),
-            Col  = yaml_constr:node_column(Attr),
+            Line = yamerl_constr:node_line(Attr),
+            Col  = yamerl_constr:node_column(Attr),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: Only one \"flags\" attribute allowed.~n",
               [Line, Col]);
         _ ->
-            Line = yaml_constr:node_line(Node),
-            Col  = yaml_constr:node_column(Node),
+            Line = yamerl_constr:node_line(Node),
+            Col  = yamerl_constr:node_column(Node),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: \"flags\" must be a string listing the flags.~n",
               [Line, Col])
     end;
 create2(Ruleset, Keyword,
-  [{#yaml_str{} = Attr, Node} | _], #op_match{var = Var}) ->
+  [{#yamerl_str{} = Attr, Node} | _], #op_match{var = Var}) ->
     case Var of
         undefined ->
-            Line = yaml_constr:node_line(Attr),
-            Col  = yaml_constr:node_column(Attr),
+            Line = yamerl_constr:node_line(Attr),
+            Col  = yamerl_constr:node_column(Attr),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: Only one variable allowed.~n",
               [Line, Col]);
         _ ->
-            Line = yaml_constr:node_line(Node),
-            Col  = yaml_constr:node_column(Node),
+            Line = yamerl_constr:node_line(Node),
+            Col  = yamerl_constr:node_column(Node),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: The variable must be associated to a regex (string).~n",
               [Line, Col])
     end;
 create2(Ruleset, Keyword, [{Attr, _} | _], _) ->
-    Line = yaml_constr:node_line(Attr),
-    Col  = yaml_constr:node_column(Attr),
+    Line = yamerl_constr:node_line(Attr),
+    Col  = yamerl_constr:node_column(Attr),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Unsupported attribute.~n", [Line, Col]);
 create2(Ruleset, Keyword, [], _) ->
     otis_conf:format_error(Ruleset, Keyword,
       "Missing attribute(s).~n", []).
 
-create_captures(Ruleset, Keyword, [#yaml_str{text = Var} = Capt | Rest],
+create_captures(Ruleset, Keyword, [#yamerl_str{text = Var} = Capt | Rest],
   Result) ->
     case otis_var:parse(Var) of
         #var{} = Var1 ->
             create_captures(Ruleset, Keyword, Rest, [Var1 | Result]);
         _ ->
-            Line = yaml_constr:node_line(Capt),
-            Col  = yaml_constr:node_column(Capt),
+            Line = yamerl_constr:node_line(Capt),
+            Col  = yamerl_constr:node_column(Capt),
             otis_conf:format_error(Ruleset, Keyword,
               "~b:~b: Expected a variable.~n",
               [Line, Col])
@@ -157,8 +157,8 @@ create_captures(Ruleset, Keyword, [#yaml_str{text = Var} = Capt | Rest],
 create_captures(_, _, [], Result) ->
     lists:reverse(Result);
 create_captures(Ruleset, Keyword, [Capt | _], _) ->
-    Line = yaml_constr:node_line(Capt),
-    Col  = yaml_constr:node_column(Capt),
+    Line = yamerl_constr:node_line(Capt),
+    Col  = yamerl_constr:node_column(Capt),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected a variable.~n",
       [Line, Col]).
@@ -176,8 +176,8 @@ create_flags2(_, _, _, [], Compile, Match) ->
       lists:reverse(Match)
     };
 create_flags2(Ruleset, Keyword, Node, [Flag | _], _, _) ->
-    Line = yaml_constr:node_line(Node),
-    Col  = yaml_constr:node_column(Node),
+    Line = yamerl_constr:node_line(Node),
+    Col  = yamerl_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Invalid regex flag '~p'~n", [Line, Col, Flag]).
 

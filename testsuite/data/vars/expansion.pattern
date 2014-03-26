@@ -7,13 +7,13 @@
 {setup,
   fun() ->
       application:start(syslogger),
-      application:start(yaml),
+      application:start(yamerl),
       application:start(otis)
   end,
   fun(_) ->
       error_logger:tty(false),
       ok = application:stop(otis),
-      ok = application:stop(yaml),
+      ok = application:stop(yamerl),
       ok = application:stop(syslogger)
   end,
   [

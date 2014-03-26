@@ -1,6 +1,6 @@
 -module(otis_op_goto).
 
--include_lib("yaml/include/yaml_nodes.hrl").
+-include_lib("yamerl/include/yamerl_nodes.hrl").
 
 -include("otis.hrl").
 -include("otis_codegen.hrl").
@@ -16,21 +16,21 @@
 %% String parsing.
 %% -------------------------------------------------------------------
 
-create(_, Keyword, #yaml_int{value = Target}) ->
+create(_, Keyword, #yamerl_int{value = Target}) ->
     [#op_goto{
         target = Target,
-        line   = yaml_constr:node_line(Keyword),
-        col    = yaml_constr:node_column(Keyword)
+        line   = yamerl_constr:node_line(Keyword),
+        col    = yamerl_constr:node_column(Keyword)
       }];
-create(_, Keyword, #yaml_str{text = Target}) ->
+create(_, Keyword, #yamerl_str{text = Target}) ->
     [#op_goto{
         target = Target,
-        line   = yaml_constr:node_line(Keyword),
-        col    = yaml_constr:node_column(Keyword)
+        line   = yamerl_constr:node_line(Keyword),
+        col    = yamerl_constr:node_column(Keyword)
       }];
 create(Ruleset, Keyword, Node) ->
-    Line = yaml_constr:node_line(Node),
-    Col  = yaml_constr:node_column(Node),
+    Line = yamerl_constr:node_line(Node),
+    Col  = yamerl_constr:node_column(Node),
     otis_conf:format_error(Ruleset, Keyword,
       "~b:~b: Expected a name or number of a rule or one of the~n"
       "  following keywords: FIRST, PREVIOUS, NEXT, LAST, STOP.~n",
