@@ -2,18 +2,24 @@ Source: erlang-otis
 Section: devel
 Priority: optional
 Maintainer: Jean-Sébastien Pédron <jean-sebastien@yakaz.com>
-Build-Depends: debhelper (>= 8), autotools-dev, erlang-dev (>= 1:14.b.2), erlang-tools, erlang-yaml, erlang-yaws (>= 1.90)
-Standards-Version: 3.9.1
+Uploaders: Christopher Faulet <christopher@yakaz.com>
+Build-Depends: debhelper (>= 9),
+ dh-autoreconf,
+ erlang-base-hipe | erlang-base,
+ erlang-tools,
+ erlang-syslogger,
+ erlang-yamerl,
+ erlang-yaws (>= 1.90),
+ erlang-eunit,
+ erlang-dev
+Standards-Version: 3.9.4
 
 Package: erlang-otis
 Architecture: all
-Section: devel
-Priority: optional
-Depends: ${misc:Depends}, ${erlang:Depends}, erlang-yaml
-Replaces: otis
-Conflicts: otis
+Depends: ${misc:Depends}, ${erlang:Depends}
 Description: HTTP request rewriting engine in Erlang
- .
  Rules are written in a YAML configuration file. This file is then used
- to generate a specific Erlang module
+ to generate a specific Erlang module, which is compiled at runtime
  .
+ The current version only supports Yaws, but the whole engine is
+ webserver-agnostic.

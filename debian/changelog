@@ -1,3 +1,10 @@
+erlang-otis (1.0.10-1) stable; urgency=low
+
+  * Use "yamerl" application, not old "yaml" one.
+  * Fix Debian package.
+
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Wed, 26 Mar 2014 11:20:35 +0100
+
 erlang-otis (1.0.9-1) experimental; urgency=low
 
   * Yaws: When using an SSL socket, the scheme is "https", not "http".

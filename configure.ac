@@ -2,7 +2,7 @@ dnl ------------------------------------------------------------------
 dnl Autoconf initialization.
 dnl ------------------------------------------------------------------
 
-AC_INIT([otis], [1.0.9])
+AC_INIT([otis], [1.0.10])
 
 AC_CONFIG_SRCDIR([src/otis_app.erl])
 AC_CONFIG_MACRO_DIR([m4])
@@ -53,7 +53,7 @@ fi
 AC_ARG_ENABLE([warnings],
 	AC_HELP_STRING([--enable-warnings],
 	    [treat warnings as errors [[default=yes]]]),,
-	enable_warnings=yes)
+	enable_warnings=no)
 if test "x${enable_warnings}" = "xyes"; then
 	append_to_EMKOPTS "warnings_as_errors"
 fi
