@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: yamerl
+Upstream-Name: otis
 Upstream-Contact: Jean-Sébastien Pédron <jean-sebastien@yakaz.com>
 Source: https://github.com/yakaz/otis
 
