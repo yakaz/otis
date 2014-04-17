@@ -3,9 +3,9 @@ TPL_PL        = template.pl
 TPL_ERL       = template.erl
 COVER_TO_HTML = cover_to_html.sh
 
-TPL_FILES = types.erl vars.erl conf.erl rewrites.erl yakaz.erl
+TPL_FILES = types.erl vars.erl conf.erl rewrites.erl
 
-ERL_TESTS = types vars conf rewrites yakaz
+ERL_TESTS = types vars conf rewrites
 
 TESTS = dialyzer $(ERL_TESTS)
 
