@@ -1,7 +1,7 @@
 ETEST         = etest
-TPL_PL        = template.pl
+TPL_PL        = gen-test-erlang-module
 TPL_ERL       = template.erl
-COVER_TO_HTML = cover_to_html.sh
+COVER_TO_HTML = cover_to_html
 
 TPL_FILES = types.erl vars.erl conf.erl rewrites.erl
 
@@ -12,7 +12,7 @@ TESTS = dialyzer $(ERL_TESTS)
 TESTS_ENVIRONMENT = ERL_LIBS=$(ERL_LIBS)
 
 EXTRA_DIST = $(TPL_PL) $(TPL_ERL) $(COVER_TO_HTML)			\
-	     eunit_tty.erl test_coverage.escript data
+	     eunit_tty.erl test_coverage data
 
 CLEANFILES = $(ERL_TESTS) $(TPL_FILES) eunit_tty.beam 			\
 	     erl_crash.dump cover_*.html cover_*.out cover_*.percent	\
