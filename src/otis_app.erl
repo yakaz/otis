@@ -70,7 +70,7 @@ params_list() ->
 -spec get_param(atom()) -> term().
 
 get_param(Param) ->
-    {ok, Value} = application:get_env(?APPLICATION, Param),
+    {ok, Value} = application:get_env(otis, Param),
     Value.
 
 -spec is_param_valid(atom(), term()) -> boolean().
@@ -105,7 +105,7 @@ is_param_valid(_Param, _Value) ->
 -spec set_param(atom(), term()) -> ok.
 
 set_param(Param, Value) ->
-    application:set_env(?APPLICATION, Param, Value).
+    application:set_env(otis, Param, Value).
 
 -spec check_and_set_param(atom(), term()) -> ok.
 
@@ -149,44 +149,44 @@ log_param_errors([]) ->
     ok;
 log_param_errors([config = Param | Rest]) ->
     error_logger:warning_msg(
-      "~s: invalid value for \"~s\": ~p.~n"
+      "otis: invalid value for \"~s\": ~p.~n"
       "It must be a filename or the atom \"none\".~n",
-      [?APPLICATION, Param, get_param(Param)]),
+      [Param, get_param(Param)]),
     log_param_errors(Rest);
 log_param_errors([templates_dir = Param | Rest]) ->
     error_logger:warning_msg(
-      "~s: invalid value for \"~s\": ~p.~n"
+      "otis: invalid value for \"~s\": ~p.~n"
       "It must be a dirname or the atom \"default\".~n",
-      [?APPLICATION, Param, get_param(Param)]),
+      [Param, get_param(Param)]),
     log_param_errors(Rest);
 log_param_errors([engine_save_dir = Param | Rest]) ->
     error_logger:warning_msg(
-      "~s: invalid value for \"~s\": ~p.~n"
+      "otis: invalid value for \"~s\": ~p.~n"
       "It must be a dirname.~n",
-      [?APPLICATION, Param, get_param(Param)]),
+      [Param, get_param(Param)]),
     log_param_errors(Rest);
 log_param_errors([geoip_db = Param | Rest]) ->
     error_logger:warning_msg(
-      "~s: invalid value for \"~s\": ~p.~n"
+      "otis: invalid value for \"~s\": ~p.~n"
       "It must be a 'none' or a path to GeoIP2-City.mmdb.~n",
-      [?APPLICATION, Param, get_param(Param)]),
+      [Param, get_param(Param)]),
     log_param_errors(Rest);
 log_param_errors([syslog_facility = Param | Rest]) ->
     error_logger:warning_msg(
-      "~s: invalid value for \"~s\": ~p.~n"
+      "otis: invalid value for \"~s\": ~p.~n"
       "It must be the name of a syslog facility (atom).~n",
-      [?APPLICATION, Param, get_param(Param)]),
+      [Param, get_param(Param)]),
     log_param_errors(Rest);
 log_param_errors([syslog_loglevel = Param | Rest]) ->
     error_logger:warning_msg(
-      "~s: invalid value for \"~s\": ~p.~n"
+      "otis: invalid value for \"~s\": ~p.~n"
       "It must be the name of a syslog level (atom).~n",
-      [?APPLICATION, Param, get_param(Param)]),
+      [Param, get_param(Param)]),
     log_param_errors(Rest);
 log_param_errors([Param | Rest]) ->
     error_logger:warning_msg(
-      "~s: unknown parameter \"~s\".~n",
-      [?APPLICATION, Param]),
+      "otis: unknown parameter \"~s\".~n",
+      [Param]),
     log_param_errors(Rest).
 
 %% -------------------------------------------------------------------
@@ -252,12 +252,13 @@ do_start([check_params | Rest]) ->
             do_start(Rest);
         false ->
             Message = io_lib:format(
-              "~s: invalid application configuration~n", [?APPLICATION]),
+              "otis: invalid application configuration~n", []),
             {error, invalid_configuration, Message}
     end;
 do_start([setup_syslog | Rest]) ->
     %% Add otis ident in syslog:
-    %% default level = info, default facility = local3.
+    %%   default level = info
+    %%   default facility = local3
     syslog:add(otis, "otis", get_param(syslog_facility), info, [log_pid]),
     %% Create the syslog wrapper for otis.
     set_loglevel(get_param(syslog_loglevel)),
@@ -282,8 +283,8 @@ do_start([load_engine | Rest]) ->
             catch
                 _:Exception ->
                     Message = io_lib:format(
-                      "~s: failed to load rewrite rules: ~p~n",
-                      [?APPLICATION, Exception]),
+                      "otis: failed to load rewrite rules: ~p~n",
+                      [Exception]),
                     {error, rules_load_failure, Message}
             end
     end;

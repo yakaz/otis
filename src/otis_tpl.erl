@@ -58,7 +58,7 @@ filename(Name) ->
         default ->
             case otis_app:from_builddir() of
                 false ->
-                    Dir = code:priv_dir(?APPLICATION),
+                    Dir = code:priv_dir(otis),
                     filename:join([Dir, "template", Name]);
                 true ->
                     Src_Dir = os:getenv("srcdir"),
