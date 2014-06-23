@@ -212,11 +212,7 @@
 %% Logging.
 %% -------------------------------------------------------------------
 
-%-define(ERROR(Format, Args),   io:format(standard_error, Format, Args)).
-%-define(WARNING(Format, Args), io:format(standard_error, Format, Args)).
-%-define(INFO(Format, Args),    io:format(standard_error, Format, Args)).
-%-define(DEBUG(Format, Args),   io:format(standard_error, Format, Args)).
--define(ERROR(Format, Args),   otis_log:error_msg(Format, Args)).
--define(WARNING(Format, Args), otis_log:warning_msg(Format, Args)).
--define(INFO(Format, Args),    otis_log:info_msg(Format, Args)).
--define(DEBUG(Format, Args),   otis_log:debug_msg(Format, Args)).
+-define(ERROR(Format, Args),   error_logger:error_msg(Format, Args)).
+-define(WARNING(Format, Args), error_logger:warning_msg(Format, Args)).
+-define(INFO(Format, Args),    error_logger:info_msg(Format, Args)).
+-define(DEBUG(Format, Args),   error_logger:info_msg(Format, Args)).

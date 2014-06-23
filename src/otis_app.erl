@@ -62,9 +62,7 @@ params_list() ->
       config,
       templates_dir,
       engine_save_dir,
-      geoip_db,
-      syslog_facility,
-      syslog_loglevel
+      geoip_db
     ].
 
 -spec get_param(atom()) -> term().
@@ -95,10 +93,6 @@ is_param_valid(geoip_db, none) ->
     true;
 is_param_valid(geoip_db, Path) ->
     io_lib:char_list(Path);
-is_param_valid(syslog_facility, Value) ->
-    syslog:is_facility_valid(Value);
-is_param_valid(syslog_loglevel, Value) ->
-    syslog:is_loglevel_valid(Value);
 is_param_valid(_Param, _Value) ->
     false.
 
@@ -171,35 +165,11 @@ log_param_errors([geoip_db = Param | Rest]) ->
       "It must be a 'none' or a path to GeoIP2-City.mmdb.~n",
       [Param, get_param(Param)]),
     log_param_errors(Rest);
-log_param_errors([syslog_facility = Param | Rest]) ->
-    error_logger:warning_msg(
-      "otis: invalid value for \"~s\": ~p.~n"
-      "It must be the name of a syslog facility (atom).~n",
-      [Param, get_param(Param)]),
-    log_param_errors(Rest);
-log_param_errors([syslog_loglevel = Param | Rest]) ->
-    error_logger:warning_msg(
-      "otis: invalid value for \"~s\": ~p.~n"
-      "It must be the name of a syslog level (atom).~n",
-      [Param, get_param(Param)]),
-    log_param_errors(Rest);
 log_param_errors([Param | Rest]) ->
     error_logger:warning_msg(
       "otis: unknown parameter \"~s\".~n",
       [Param]),
     log_param_errors(Rest).
-
-%% -------------------------------------------------------------------
-%% Logging.
-%% -------------------------------------------------------------------
-
-set_loglevel(Level) ->
-    case syslog:is_loglevel_valid(Level) of
-        true ->
-            syslog_wrapper:create(otis_log, otis, Level);
-        false ->
-            false
-    end.
 
 %% -------------------------------------------------------------------
 %% Development utils.
@@ -220,7 +190,6 @@ from_builddir() ->
 start(_, _) ->
     Steps = [
       check_params,
-      setup_syslog,
       add_save_dir_to_code_path,
       load_engine
     ],
@@ -255,14 +224,6 @@ do_start([check_params | Rest]) ->
               "otis: invalid application configuration~n", []),
             {error, invalid_configuration, Message}
     end;
-do_start([setup_syslog | Rest]) ->
-    %% Add otis ident in syslog:
-    %%   default level = info
-    %%   default facility = local3
-    syslog:add(otis, "otis", get_param(syslog_facility), info, [log_pid]),
-    %% Create the syslog wrapper for otis.
-    set_loglevel(get_param(syslog_loglevel)),
-    do_start(Rest);
 do_start([add_save_dir_to_code_path | Rest]) ->
     %% Add the engine save directory to the code path, because the
     %% engine source file and beam file are written to this directory.

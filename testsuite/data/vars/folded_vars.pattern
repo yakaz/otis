@@ -3,15 +3,13 @@
 %% TEST
 {setup,
   fun() ->
-      application:start(syslogger),
       application:start(yamerl),
       application:start(otis)
   end,
   fun(_) ->
       error_logger:tty(false),
       ok = application:stop(otis),
-      ok = application:stop(yamerl),
-      ok = application:stop(syslogger)
+      ok = application:stop(yamerl)
   end,
   [
     ?_assertMatch(

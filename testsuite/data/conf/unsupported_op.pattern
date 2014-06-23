@@ -3,7 +3,6 @@
 %% TEST
 {setup,
   fun() ->
-      application:start(syslogger),
       application:start(yamerl),
       application:start(otis),
       otis_app:set_param(engine_save_dir, os:getenv("PWD"))
@@ -11,8 +10,7 @@
   fun(_) ->
       error_logger:tty(false),
       ok = application:stop(otis),
-      ok = application:stop(yamerl),
-      ok = application:stop(syslogger)
+      ok = application:stop(yamerl)
   end,
   [
     ?_assertThrow(
