@@ -8,6 +8,10 @@ config.h.in
 config.h.in~
 configure
 
+*.beam
+/.rebar
+/deps
+
 # Files produced by Debian package.
 build-stamp
 configure-stamp
