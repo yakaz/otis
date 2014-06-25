@@ -1,4 +1,4 @@
-erlang-otis (1.0.10-1) stable; urgency=low
+erlang-otis (1.0.11-1) stable; urgency=low
 
   * Do not store original request anymore in #arg.opaque
 
