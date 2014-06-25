@@ -4,6 +4,7 @@
 { "@VERSION@",
   [
     %% To upgrade from the specified version to current one.
+    {"1.0.10", [{load_module, otis_yaws_mod_rewrite}]},
     {"1.0.8", [{restart_application, otis}]},
     {"1.0.7", [{restart_application, otis}]},
     {"1.0.6", [{restart_application, otis}]},
@@ -14,6 +15,7 @@
     {"1.0.1", [{restart_application, otis}]}
   ], [
     %% To downgrade from the current version to the specified one.
+    {"1.0.10", [{load_module, otis_yaws_mod_rewrite}]},
     {"1.0.8", [{restart_application, otis}]},
     {"1.0.7", [{restart_application, otis}]},
     {"1.0.6", [{restart_application, otis}]},
