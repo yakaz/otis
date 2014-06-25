@@ -204,9 +204,6 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
         undefined -> {undefined, undefined, undefined};
         Auth      -> Auth
     end,
-    ARG1 = ARG#arg{
-      opaque = lists:keystore(orig_req, 1, ARG#arg.opaque, {orig_req, Req})
-    },
     try
         Path0 = case Req#http_request.path of
             {abs_path, P0} -> P0;
@@ -237,7 +234,7 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
         State1 = otis_reqrw_engine:eval(State),
         %% We need to convert our internal state back to the Yaws'
         %% structure.
-        back_to_yaws(State1, ARG1)
+        back_to_yaws(State1, ARG)
     catch
         throw:invalid_request ->
             %% This happends when:
@@ -247,7 +244,7 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
             %%      "others".
             %% We answer it with a 400 Bad Request.
             ?ERROR("Invalid HTTP request: ~p~n",
-              [ARG1#arg{clidata = body_skipped}]),
+              [ARG#arg{clidata = body_skipped}]),
             {Content_Type, Content} = otis_utils:response_content(400),
             RHeaders = rheaders_to_yaws([
                 {"content-type", Content_Type, undefined, undefined}
@@ -257,7 +254,7 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
               headers = RHeaders,
               content = Content
             },
-            ARG1#arg{
+            ARG#arg{
               state = Resp
             };
         error:{badmatch, _} ->
@@ -273,7 +270,7 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
               headers = RHeaders,
               content = Content
             },
-            ARG1#arg{
+            ARG#arg{
               state = Resp
             };
         error:undef ->
@@ -289,7 +286,7 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
               headers = RHeaders,
               content = Content
             },
-            ARG1#arg{
+            ARG#arg{
               state = Resp
             };
         _:Exception ->
@@ -307,7 +304,7 @@ arg_rewrite(#arg{clisock = Socket, req = Req, headers = Headers0} = ARG) ->
               headers = RHeaders,
               content = Content
             },
-            ARG1#arg{
+            ARG#arg{
               state = Resp
             }
     end.
