@@ -1,5 +1,11 @@
 erlang-otis (1.0.10-1) stable; urgency=low
 
+  * Do not store original request anymore in #arg.opaque
+
+ -- Christopher Faulet <christopher@yakaz.com>  Wed, 25 Jun 2014 17:01:35 +0200
+
+erlang-otis (1.0.10-1) stable; urgency=low
+
   * Use "yamerl" application, not old "yaml" one.
   * Fix Debian package.
 
