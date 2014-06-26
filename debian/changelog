@@ -1,3 +1,9 @@
+erlang-otis (1.0.12-1) stable; urgency=low
+
+  * Replace {vsn, ...} in ebin/otis.app by the real version.
+
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Wed, 25 Jun 2014 17:37:26 +0200
+
 erlang-otis (1.0.11-1) stable; urgency=low
 
   * Do not store original request anymore in #arg.opaque
