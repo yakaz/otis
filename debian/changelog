@@ -1,3 +1,9 @@
+erlang-otis (1.0.13-1) experimental; urgency=low
+
+  * Add documentation.
+
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Fri, 27 Jun 2014 17:00:40 +0200
+
 erlang-otis (1.0.12-1) stable; urgency=low
 
   * Replace {vsn, ...} in ebin/otis.app by the real version.
