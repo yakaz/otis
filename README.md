@@ -1,6 +1,6 @@
 # otis: HTTP request rewriting engine
 
-otis is an Erlang application to be used with an HTTP agent to rewrite requests.
+**otis** is an Erlang application to be used with an HTTP agent to rewrite requests.
 
 Rewrite rules are expressed in a YAML configuration file. The rules are used to generate and compile an Erlang module at runtime. This module can be regenerated on-the-fly to change the rules. Thanks to this, the overhead of the rewrite engine remains very low.
 
@@ -107,7 +107,7 @@ otis_reqrw_engine:uri("http://www.example.com/myaccount").
 %% Returns: "http://www.example.com/core/accounts.php"
 ```
 
-One important difference compared to Apache's `mod_rewrite` is that *a matching rule is final, except specified otherwise*! This is the opposite to `mod_rewrite`.
+One important difference compared to Apache's `mod_rewrite` is that **a matching rule is final, except specified otherwise**! This is the opposite to `mod_rewrite`.
 
 ### Reloading rules
 
