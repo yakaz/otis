@@ -107,7 +107,7 @@ otis_reqrw_engine:uri("http://www.example.com/myaccount").
 %% Returns: "http://www.example.com/core/accounts.php"
 ```
 
-One important difference compared to Apache's `mod_rewrite` is that **a matching rule is final, except specified otherwise**! This is the opposite to `mod_rewrite`.
+One important difference compared to Apache's `mod_rewrite` is that **a matching rule is final, unless specified otherwise**! This is the opposite to `mod_rewrite`.
 
 ### Reloading rules
 
