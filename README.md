@@ -49,7 +49,7 @@ application:start(otis).
 
 ### Specifying a rules configuration file
 
-Once you have a rules configuration file ready (see below for its syntax), you have to ways of specifying its path to otis:
+Once you have a rules configuration file ready (see below for its syntax), you have two ways of specifying its path to otis:
 
 * Pass the filename to `otis:reload_engine/1`:
     ```erlang
