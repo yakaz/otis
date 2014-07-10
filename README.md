@@ -140,3 +140,7 @@ opposite to `mod_rewrite`.
 
 If an error occurs while loading the new rules, the previous set of
 rules remains active.
+
+## Complete documentation
+
+See the `doc` subdirectory for a complete user guide and reference manual.
