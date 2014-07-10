@@ -149,16 +149,16 @@ Four variable name prefixes are supported:
 
 | Operator | Description |
 |----------|-------------|
-| [`all`](op-all.md)           | All children operations must succeed for `all` to succeed too               |
-| [`any`](op-any.md)           | At least one child operation must succeed for `any` to succeed too          |
-| [`eq`](op-eq.md)             | Both operands must be equal for `eq` to succeed                             |
-| [`goto`](op-goto.md)         | Jump to another rule                                                        |
-| [`log `](op-log.md)          | Log a message                                                               |
-| [`match`](op-match.md)       | Left operand must match the given regex                                     |
-| [`not`](op-not.md)           | All children operations must fail for `not` to succeed                      |
-| [`response`](op-response.md) | Return an HTTP response instead of proceeding further with the HTTP request |
-| [`set`](op-set.md)           | Set variable's value                                                        |
-| [`subst`](op-subst.md)       | Change variable's value using a regex                                       |
+| [`all`](op-all.md#operator-all)       | All children operations must succeed for `all` to succeed too               |
+| [`any`](op-any.md#operator-any)       | At least one child operation must succeed for `any` to succeed too          |
+| [`eq`](op-eq.md#operator-eq)          | Both operands must be equal for `eq` to succeed                             |
+| [`goto`](op-goto.md#operator-goto)    | Jump to another rule                                                        |
+| [`log `](op-log.md#operator-log)      | Log a message                                                               |
+| [`match`](op-match.md#operator-match) | Left operand must match the given regex                                     |
+| [`not`](op-not.md#operator-not)       | All children operations must fail for `not` to succeed                      |
+| [`response`](op-response.md#operator-response) | Return an HTTP response instead of proceeding further with the HTTP request |
+| [`set`](op-set.md#operator-set)       | Set variable's value                                                        |
+| [`subst`](op-subst.md#operator-subst) | Change variable's value using a regex                                       |
 
 The `rule` keyword in the rule definition is an equivalent of `all`,
 because all top-level operations must succeed for the rule to succeed.
