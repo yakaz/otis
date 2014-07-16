@@ -15,6 +15,8 @@ so it's easy to add support for another web server.
 otis is distributed under the terms of the **2-clause BSD license**; see
 `COPYING`.
 
+[![Build Status](https://travis-ci.org/yakaz/otis.svg?branch=master)](https://travis-ci.org/yakaz/otis)
+
 ## Installation
 
 ### Rebar
