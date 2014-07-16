@@ -1,16 +1,13 @@
-.swp
-.*.swp
-Makefile.in
-ac-aux/
-aclocal.m4
-autom4te.cache/
-config.h.in
-config.h.in~
-configure
-
+.sw?
+.*.sw?
 *.beam
-/.rebar
-/deps
+Makefile.in
+/ac-aux/
+/aclocal.m4
+/autom4te.cache/
+/config.h.in
+/config.h.in~
+/configure
 
 # Files produced by Debian package.
 build-stamp
@@ -21,3 +18,13 @@ debian/*/
 debian/build/
 debian/files
 !debian/source/
+
+# Files produced by rebar.
+/.eunit/
+/.rebar/
+/rebar
+/deps/
+/test/
+/ebin/otis.app
+
+/otis_reqrw_engine.erl
