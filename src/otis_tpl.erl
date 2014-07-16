@@ -60,9 +60,8 @@ filename(Name) ->
                 false ->
                     Dir = code:priv_dir(otis),
                     filename:join([Dir, "template", Name]);
-                true ->
-                    Src_Dir = os:getenv("srcdir"),
-                    filename:join([Src_Dir, "..", "priv", "template", Name])
+                {true, Top_Dir} ->
+                    filename:join([Top_Dir, "priv", "template", Name])
             end;
         Dir ->
             filename:join([Dir, Name])

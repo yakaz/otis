@@ -178,7 +178,23 @@ log_param_errors([Param | Rest]) ->
 from_builddir() ->
     Dir = filename:dirname(code:which(?MODULE)),
     Makefile = filename:join([Dir, "Makefile"]),
-    filelib:is_file(Makefile).
+    case filelib:is_file(Makefile) of
+        true ->
+            case os:getenv("top_srcdir") of
+                false   -> from_builddir2();
+                Top_Dir -> {true, Top_Dir}
+            end;
+        false ->
+            from_builddir2()
+    end.
+
+from_builddir2() ->
+    Dir = filename:dirname(filename:dirname(code:which(?MODULE))),
+    Rebar_Config = filename:join([Dir, "rebar.config"]),
+    case filelib:is_file(Rebar_Config) of
+        true  -> {true, Dir};
+        false -> false
+    end.
 
 %% -------------------------------------------------------------------
 %% application(3erl) callbacks.

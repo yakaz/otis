@@ -193,9 +193,9 @@ compile_engine(File) ->
     Options1 = case otis_app:from_builddir() of
         false ->
             Options;
-        true ->
-            Src_Dir = os:getenv("srcdir"),
-            Inc_Dir = filename:join([Src_Dir, "..", "include"]),
+        {true, Top_Dir} ->
+            Src_Dir = filename:join([Top_Dir, "src"]),
+            Inc_Dir = filename:join([Top_Dir, "include"]),
             [
               {i, Src_Dir},
               {i, Inc_Dir},
