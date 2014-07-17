@@ -58,7 +58,7 @@ init(_) ->
       otis_geoip,
       {otis_geoip, start_link, []},
       permanent,
-      infinity,
+      5000,
       worker,
       [otis_geoip]
     },
