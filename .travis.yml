@@ -12,6 +12,11 @@ otp_release:
   - R14B03
   - R14B02
 
+# Required by Yaws.
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y libpam0g-dev
+
 notifications:
   email:
     recipients:
