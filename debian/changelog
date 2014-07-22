@@ -1,8 +1,10 @@
-erlang-otis (1.0.13-1) experimental; urgency=low
+erlang-otis (1.0.13-1) stable; urgency=low
 
+  * Make otis_sup.erl compatible with Erlang R14B.
+  * Allow to run the testsuite using rebar.
   * Add documentation.
 
- -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Fri, 27 Jun 2014 17:00:40 +0200
+ -- Jean-Sébastien Pédron <jean-sebastien@yakaz.com>  Tue, 22 Jul 2014 16:56:52 +0200
 
 erlang-otis (1.0.12-1) stable; urgency=low
 
