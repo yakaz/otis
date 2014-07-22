@@ -73,7 +73,7 @@ opposite to eg. Apache's `mod_rewrite`.
 ### Scope
 
 * Variables are visible in all rules.
-* If a rule set or modifies a variable, next evaluated rules will see
+* If a rule sets or modifies a variable, next evaluated rules will see
     the new value.
 * A new environment is created for each request, therefore variables set
     for a request are not visible to following requests.
