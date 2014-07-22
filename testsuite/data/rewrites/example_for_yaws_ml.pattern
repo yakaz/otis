@@ -1,0 +1,54 @@
+%% vim:ft=erlang:
+
+%% TEST
+{setup,
+  fun() ->
+      application:start(yamerl),
+      application:start(otis),
+      otis_app:set_param(engine_save_dir, os:getenv("PWD"))
+  end,
+  fun(_) ->
+      error_logger:tty(false),
+      ok = application:stop(otis),
+      ok = application:stop(yamerl)
+  end,
+  [
+    %% Compile engine.
+    ?_assertMatch(
+      ok,
+      otis:reload_engine_if_modified("${FILENAME}")
+    ),
+
+    %% Tests.
+    ?_assertMatch(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.example.org/")
+    ),
+    ?_assertMatch(
+      "GET /?q=Mail%20server HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.example.org/?q=Mail%20server")
+    ),
+    ?_assertMatch(
+      "GET /?q=Yaws HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.example.org/?q=http%20%20server")
+    ),
+    ?_assertMatch(
+      "GET /?q=Yaws HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "\r\n",
+      otis_reqrw_engine:request("http://www.example.org/?q=HTTP%20Server")
+    ),
+
+    %% Remove engine.
+    ?_assertMatch(
+      ok,
+      otis:remove_saved_engine()
+    )
+  ]
+}

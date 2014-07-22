@@ -1,0 +1,12 @@
+# vim:ft=yaml:
+
+# When a user googles for "HTTP server", tell him about Yaws.
+#
+# If the "q" parameter in the query string contains "HTTP server",
+# replace this string by "Yaws".
+- rule:
+    - match:
+        $(query:q): "HTTP\\s+server"
+        flags: i
+    - set:
+        $(query:q): "Yaws"
