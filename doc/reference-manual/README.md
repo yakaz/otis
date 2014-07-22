@@ -70,6 +70,14 @@ opposite to eg. Apache's `mod_rewrite`.
 * You can change variables' value using `match`, `set` and `subst`
     operators.
 
+### Scope
+
+* Variables are visible in all rules.
+* If a rule set or modifies a variable, next evaluated rules will see
+    the new value.
+* A new environment is created for each request, therefore variables set
+    for a request are not visible to following requests.
+
 ### Variable name prefix
 
 Four variable name prefixes are supported:
