@@ -98,7 +98,7 @@ request2(URI, Headers, State) ->
     {ok, _, Groups} = yaws_server:getconf(),
     Group = pick_group(Port, Groups),
     Sconf = pick_sconf(Host1, Group),
-    VHost = Sconf#sconf.servername,
+    VHost = yaws:sconf_servername(Sconf),
     Host = case Host1 of
         undefined -> VHost;
         _         -> Host1
@@ -142,10 +142,11 @@ request2(URI, Headers, State) ->
 
 pick_group(_, []) ->
     throw(invalid_port);
-pick_group(Port, [[SC | _] = Group | _]) when SC#sconf.port == Port ->
-    Group;
-pick_group(Port, [_ | Groups]) ->
-    pick_group(Port, Groups).
+pick_group(Port, [[SC | _] = Group | Rest]) ->
+    case yaws:sconf_port(SC) of
+        Port -> Group;
+        _    -> pick_group(Port, Rest)
+    end.
 
 pick_sconf(Host, SCs) ->
     pick_host(Host, SCs, SCs).
@@ -154,7 +155,7 @@ pick_host(Host, SCs, All_SCs)
   when Host == ""; Host == undefined; SCs == [] ->
     hd(All_SCs);
 pick_host(Host, [SC | Rest], All_SCs) ->
-    case yaws_server:comp_sname(Host, SC#sconf.servername) of
+    case yaws_server:comp_sname(Host, yaws:sconf_servername(SC)) of
         true  ->
             SC;
         false ->
@@ -162,7 +163,7 @@ pick_host(Host, [SC | Rest], All_SCs) ->
               fun(Alias) ->
                   yaws_server:wildcomp_salias(Host, Alias)
               end,
-              SC#sconf.serveralias),
+              yaws:sconf_serveralias(SC)),
             case Res of
                 true  -> SC;
                 false -> pick_host(Host, Rest, All_SCs)
