@@ -9,7 +9,11 @@ ERL_TESTS = types vars conf rewrites
 
 TESTS = dialyzer $(ERL_TESTS)
 
-TESTS_ENVIRONMENT = ERL_LIBS=$(ERL_LIBS)
+TESTS_ENVIRONMENT = ERL_LIBS=$(ERL_LIBS)				\
+		    srcdir=$(srcdir)					\
+		    builddir=$(builddir)				\
+		    top_srcdir=$(top_srcdir)				\
+		    top_builddir=$(top_builddir)
 
 EXTRA_DIST = $(TPL_PL) $(TPL_ERL) $(COVER_TO_HTML)			\
 	     eunit_tty.erl test_coverage data
