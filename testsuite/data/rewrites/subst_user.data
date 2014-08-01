@@ -1,0 +1,11 @@
+# vim:ft=yaml:
+
+- rule:
+  - set:
+      $(foo): "barbaz"
+  - subst:
+      $(foo): "a"
+      value:  "4"
+  - log: "foo=$(foo)"
+  - set:
+      $(PATH): "/$(foo)"

@@ -12,5 +12,5 @@
     {State4, Value} = otis_var:get(State3, Var1),
     Flags  = ?FLAGS,
     Value1 = re:replace(Value, Regex, Repl, Flags),
-    State5 = otis_var:set(State4, Var1, Value),
+    State5 = otis_var:set(State4, Var1, Value1),
     ?NEXT_EXPR(State5).
